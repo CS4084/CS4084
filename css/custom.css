@@ -52,5 +52,41 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .col-sm-6 {
-	min-width: 300px;
+	min-width: 60%;
+
+}
+
+#side-carousel {
+	max-width:400px;
+	overflow:hidden;
+	float: left;
+	margin-bottom: 30px;
+	
+	
+}
+
+.task-info {
+	float: left;
+	margin-left: 10px;
+	margin-top:10px;
+	min-width: 400px;
+
+	
+}
+
+.greyBG {
+	background-color:#ddd;
+}
+
+@media screen and (max-width: 767px) {
+    #side-carousel {
+        max-width:100%;
+		max-height:600px;
+		
+    }
+	.task-info {
+		margin-left: 0px;
+		min-width:0px;
+		
+	}
 }
