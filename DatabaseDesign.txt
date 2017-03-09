@@ -1,0 +1,47 @@
+Student:
+firstName
+lastName
+id
+email
+subjectStream
+password
+repScore
+//if rep < 40 then they are a student
+
+Moderator:
+firstName
+lastName
+id
+email
+subjectStream
+password
+repScore
+//if rep > 40 then they are a mod
+
+Task:
+taskCreatorID - possibly
+taskClaimorID - possibly
+taskTitle
+taskType
+taskDescription
+tags
+noOfPages
+noOfWords
+sourceFileFormat
+taskClaimDeadline
+taskCompletionDeadline
+isClaimed
+isFlagged
+
+List of available tasks:
+//This will check and see if the booleans 'isClaimed' and 'isFlagged' are false and if they're false the tasks will be stored here
+
+
+Claimed tasks:
+//This is the user's claimed tasks, it could possibly be filled by having a 'claimerID' field in 'Task'and if it matches the user's ID then the task will be stored in their claimed tasks.
+
+Flagged tasks:
+//Checks if isFlagged is true and if it is the flagged tasks are stored here.
+
+User tasks:
+//These are the user's created tasks. It could be filled by having a taskCreatorID for the task and if it matches the user's then the task is stored here.
