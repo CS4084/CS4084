@@ -1,138 +1,143 @@
 <?php
  ob_start();
+ include('config.php');
  session_start();
- require_once 'dbconnect.php';
+ 
  
  // it will never let you open index(login) page if session is set
- if ( isset($_SESSION['user'])!="" ) {
-  header("Location: home.php");
+ if ( isset($_SESSION['userId'])!="" ) {
+  header("Location: dashboard.php");
   exit;
  }
- 
  $error = false;
+ if ($_SERVER['REQUEST_METHOD'] == 'POST'){
  
- if( isset($_POST['btn-login']) ) { 
-  
-  // prevent sql injections/ clear user invalid inputs
-  $email = trim($_POST['email']);
-  $email = strip_tags($email);
-  $email = htmlspecialchars($email);
-  
-  $pass = trim($_POST['pass']);
-  $pass = strip_tags($pass);
-  $pass = htmlspecialchars($pass);
-  // prevent sql injections / clear user invalid inputs
-  
-  if(empty($email)){
-   $error = true;
-   $emailError = "Please enter your email address.";
-  } else if ( !filter_var($email,FILTER_VALIDATE_EMAIL) ) {
-   $error = true;
-   $emailError = "Please enter valid email address.";
-  }
-  
-  if(empty($pass)){
-   $error = true;
-   $passError = "Please enter your password.";
-  }
-  
-  // if there's no error, continue to login
-  if (!$error) {
+ $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Invalid email or password.</div>";
+ 
+ echo $_POST['email'];
+ echo $_POST['password'];
+ if (isset($_POST['email']) && isset($_POST['password']))
+ {
+	$email = $_POST['email'];
+	$password = $_POST['password'];
+	
+	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+		$error = true;
+		
+	}
+	
+	if(!$error)
+	{
+      $myemail = mysqli_real_escape_string($db,$email);
+      $mypassword = mysqli_real_escape_string($db,$password); 
+      
+      $sql = "SELECT userId FROM students WHERE email = '$myemail' and password = '$mypassword'";
+      $result = mysqli_query($db,$sql);
+
+      $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+      
+      
+      $count = mysqli_num_rows($result);
+      
+      // If result matched $myusername and $mypassword, table row must be 1 row
+		
+      if($count == 1) {
+        
+         $_SESSION['userId'] = $result;
+         
+         header("location: dashboard.php");
+      }else {
+         $error = true;
+      }
    
-   $password = hash('sha256', $pass); // password hashing using SHA256
-  
-   $res=mysql_query("SELECT userId, userName, userPass FROM users WHERE userEmail='$email'");
-   $row=mysql_fetch_array($res);
-   $count = mysql_num_rows($res); // if uname/pass correct it returns must be 1 row
-   
-   if( $count == 1 && $row['userPass']==$password ) {
-    $_SESSION['user'] = $row['userId'];
-    header("Location: home.php");
-   } else {
-    $errMSG = "Incorrect Credentials, Try again...";
-   }
-    
-  }
-  
+	}
  }
-?>
-<!DOCTYPE html>
-<html>
-<head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title>Coding Cage - Login & Registration System</title>
-<link rel="stylesheet" href="assets/css/bootstrap.min.css" type="text/css"  />
-<link rel="stylesheet" href="style.css" type="text/css" />
+ 
+ else {
+	 $error = true;
+
+ }
+ }
+ ?>
+
+
+
+<html lang="en"><head>
+    <meta charset="utf-8">
+
+
+    <title>Login - Proofreaders</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS: You can use this stylesheet to override any Bootstrap styles and/or apply your own styles -->
+    <link href="css/custom.css" rel="stylesheet">
+
+
 </head>
+
 <body>
 
-<div class="container">
-
- <div id="login-form">
-    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" autocomplete="off">
-    
-     <div class="col-md-12">
-        
-         <div class="form-group">
-             <h2 class="">Sign In.</h2>
+    <!-- Navigation -->
+    <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
+        <div class="container">
+            <!-- Logo-->
+            <div class="navbar-header">
+                <a class="navbar-brand" href="index.html"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
             </div>
-        
-         <div class="form-group">
-             <hr />
-            </div>
-            
-            <?php
-   if ( isset($errMSG) ) {
-    
-    ?>
-    <div class="form-group">
-             <div class="alert alert-danger">
-    <span class="glyphicon glyphicon-info-sign"></span> <?php echo $errMSG; ?>
-                </div>
-             </div>
-                <?php
-   }
-   ?>
-            
-            <div class="form-group">
-             <div class="input-group">
-                <span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
-             <input type="email" name="email" class="form-control" placeholder="Your Email" value="<?php echo $email; ?>" maxlength="40" />
-                </div>
-                <span class="text-danger"><?php echo $emailError; ?></span>
-            </div>
-            
-            <div class="form-group">
-             <div class="input-group">
-                <span class="input-group-addon"><span class="glyphicon glyphicon-lock"></span></span>
-             <input type="password" name="pass" class="form-control" placeholder="Your Password" maxlength="15" />
-                </div>
-                <span class="text-danger"><?php echo $passError; ?></span>
-            </div>
-            
-            <div class="form-group">
-             <hr />
-            </div>
-            
-            <div class="form-group">
-             <button type="submit" class="btn btn-block btn-primary" name="btn-login">Sign In</button>
-            </div>
-            
-            <div class="form-group">
-             <hr />
-            </div>
-            
-            <div class="form-group">
-             <a href="register.php">Sign Up Here...</a>
-            </div>
-        
         </div>
-   
-    </form>
-    </div> 
+        <!-- /.container -->
+    </nav>
 
-</div>
+<div class="container-fluid">
 
-</body>
-</html>
-<?php ob_end_flush(); ?>
+	
+	  <div class="col-center">
+
+			<!-- Form --> 
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<span class="glyphicon glyphicon-log-in"></span> 
+						Log In
+					</h3>
+				</div>
+				<div class="panel-body">
+					<?php if($error) {
+						echo $errorbox;
+					} ?>
+					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
+						<div class="form-group">
+							<input type="text" class="form-control" id="email" name="email" placeholder="Email">
+						</div>
+						<div class="form-group">
+							<input type="password" class="form-control" id="password" name="password" placeholder="Password">
+						</div>
+						<button type="submit" class="btn btn-default">Log In</button>
+					</form>
+					<div class="register">
+						<a href="register.html">Not a member? Click here to register now.</a>
+					</div>
+				</div>
+			</div>
+			
+			<div class="row">
+				<article class="col-xs-12">
+					<h2>What is proofreaders?</h2>
+					<p>Proofreaders is a crowd sourced proofreading community. Submit your academic work for proofreading by your peers, and proofread others' work. Register today and become part of our growing community.</p>
+					
+				</article>
+			</div>
+ 
+			
+			
+
+			 
+ 			
+			
+
+	  </div>
+
+	</div><!--/container-fluid-->
+	
