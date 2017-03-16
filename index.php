@@ -14,29 +14,22 @@
  
  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Invalid email or password.</div>";
  
- echo $_POST['email'];
- echo $_POST['password'];
  if (isset($_POST['email']) && isset($_POST['password']))
  {
-	$email = $_POST['email'];
-	$password = $_POST['password'];
 	
-	if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+	if (!filter_var($_POST['email'], FILTER_VALIDATE_EMAIL)) {
 		$error = true;
 		
 	}
 	
 	if(!$error)
 	{
-      $myemail = mysqli_real_escape_string($db,$email);
-      $mypassword = mysqli_real_escape_string($db,$password); 
+      $myemail = mysqli_real_escape_string($db,$_POST['email']);
+      $mypassword = mysqli_real_escape_string($db,$_POST['password']); 
       
       $sql = "SELECT userId FROM students WHERE email = '$myemail' and password = '$mypassword'";
       $result = mysqli_query($db,$sql);
 
-      $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-      
-      
       $count = mysqli_num_rows($result);
       
       // If result matched $myusername and $mypassword, table row must be 1 row
