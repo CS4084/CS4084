@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 16, 2017 at 11:50 AM
+-- Generation Time: Mar 16, 2017 at 12:16 PM
 -- Server version: 10.1.20-MariaDB
 -- PHP Version: 5.6.29
 
@@ -51,16 +51,18 @@ CREATE TABLE `tags` (
 CREATE TABLE `task` (
   `taskId` varchar(32) NOT NULL,
   `userId` mediumint(9) NOT NULL,
-  `taskTitle` varchar(32) DEFAULT NULL,
-  `taskType` varchar(32) DEFAULT NULL,
-  `taskDesc` varchar(32) DEFAULT NULL,
+  `taskTitle` varchar(32) NOT NULL,
+  `taskType` varchar(32) NOT NULL,
+  `taskDesc` varchar(32) NOT NULL,
   `taskSubject` varchar(32) NOT NULL,
   `pageCount` mediumint(9) NOT NULL,
   `wordCount` mediumint(9) NOT NULL,
   `taskTags` varchar(32) NOT NULL,
-  `noOfWords` mediumint(9) NOT NULL,
   `taskClaimDeadline` date NOT NULL,
-  `taskCompletionDeadline` date NOT NULL
+  `taskCompletionDeadline` date NOT NULL,
+  `samplePic1` varchar(255) NOT NULL,
+  `samplePic2` varchar(255) NOT NULL,
+  `samplePic3` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
