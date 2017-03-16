@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Mar 16, 2017 at 12:16 PM
+-- Generation Time: Mar 16, 2017 at 12:24 PM
 -- Server version: 10.1.20-MariaDB
 -- PHP Version: 5.6.29
 
@@ -85,7 +85,7 @@ CREATE TABLE `task_claimed` (
 CREATE TABLE `task_completed` (
   `taskId` int(11) NOT NULL,
   `userId` int(11) NOT NULL,
-  `feedback` tinyint(4) NOT NULL,
+  `feedback` tinyint(1) NOT NULL,
   `review` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
