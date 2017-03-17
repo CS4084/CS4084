@@ -33,13 +33,13 @@
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav">
                     <li class="active">
-                        <a href="dashboard.html">Dashboard</a>
+                        <a href="dashboard.php">Dashboard</a>
                     </li>
                     <li>
-                        <a href="profile.html">My Profile</a>
+                        <a href="profile.php">My Profile</a>
                     </li>
                     <li>
-                        <a href="claimedtasks.html">Claimed Tasks</a>
+                        <a href="claimedtasks.php">Claimed Tasks</a>
                     </li>
 					   
                 </ul>

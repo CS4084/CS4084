@@ -1,5 +1,5 @@
 <?php
- ob_start();
+ //ob_start();
  include('config.php');
  session_start();
  
@@ -27,16 +27,16 @@
       $myemail = mysqli_real_escape_string($db,$_POST['email']);
       $mypassword = mysqli_real_escape_string($db,$_POST['password']); 
       
-      $sql = "SELECT userId FROM students WHERE email = '$myemail' and password = '$mypassword'";
+      $sql = "SELECT userId FROM users WHERE email = '$myemail' and password = '$mypassword'";
       $result = mysqli_query($db,$sql);
-
+	  $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
       $count = mysqli_num_rows($result);
       
       // If result matched $myusername and $mypassword, table row must be 1 row
 		
       if($count == 1) {
         
-         $_SESSION['userId'] = $result;
+         $_SESSION['userId'] = $row["userId"];
          
          header("location: dashboard.php");
       }else {
