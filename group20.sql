@@ -132,7 +132,7 @@ CREATE TABLE `users` (
   `userId` mediumint(9) NOT NULL,
   `firstName` varchar(32) NOT NULL,
   `lastName` varchar(32) NOT NULL,
-  `studentId` mediumint(9) NOT NULL,
+  `studentId` int(11) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` varchar(32) NOT NULL,
   `repScore` mediumint(9) NOT NULL,
