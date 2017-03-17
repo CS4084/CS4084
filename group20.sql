@@ -57,7 +57,6 @@ CREATE TABLE `task` (
   `taskSubject` varchar(32) NOT NULL,
   `pageCount` mediumint(9) NOT NULL,
   `wordCount` mediumint(9) NOT NULL,
-  `taskTags` varchar(32) NOT NULL,
   `taskClaimDeadline` date NOT NULL,
   `taskCompletionDeadline` date NOT NULL,
   `samplePic1` varchar(255) NOT NULL,
