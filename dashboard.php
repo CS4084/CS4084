@@ -1,3 +1,15 @@
+<?php 
+  include('config.php');
+  session_start();
+
+  if ( $_SESSION['userId']=="") {
+    header("Location: index.php");
+    exit;
+  }
+  
+ ?>
+  
+
 <!DOCTYPE html>
 <!-- Template by Quackit.com -->
 <html lang="en">

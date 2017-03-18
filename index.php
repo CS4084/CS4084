@@ -77,7 +77,7 @@
         <div class="container">
             <!-- Logo-->
             <div class="navbar-header">
-                <a class="navbar-brand" href="index.html"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
+                <a class="navbar-brand" href="index.php"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
             </div>
         </div>
         <!-- /.container -->
