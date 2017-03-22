@@ -8,15 +8,32 @@
   }
   
    $error = false;
+   $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again.</div>";
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
-	if(isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_POST['taskfile']))
+	if(true || isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_FILES['taskfile']) && isset($_POST['discipline']))
 	{
-		
+	  $file_name = $_FILES['taskfile']['name'];
+      $file_size =$_FILES['taskfile']['size'];
+      $file_tmp =$_FILES['taskfile']['tmp_name'];
+	  move_uploaded_file($file_tmp,"uploads/".$file_name);
+	  
+	  $title = mysqli_real_escape_string($db,$_POST['title']);
+	  $type = mysqli_real_escape_string($db,$_POST['type']);
+	  $description = mysqli_real_escape_string($db,$_POST['description']);
+	  $pagecount = mysqli_real_escape_string($db,$_POST['pagecount']);
+	  $wordcount = mysqli_real_escape_string($db,$_POST['wordcount']);
+	  $claimdeadline = mysqli_real_escape_string($db,$_POST['claimdeadline']);
+	  $completiondeadline = mysqli_real_escape_string($db,$_POST['completiondeadline']);
+	  $discipline = mysqli_real_escape_string($db,$_POST['discipline']);
+	  $userid = 1;
+	  
+	  $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, filePath) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', 'uploads/$file_name)'";
+	  exec($sql);
 	}
 	
 	else
-		$error = true;	 
+	  $error = true;	 
  }
   
   
@@ -114,11 +131,13 @@
 			<h3 class="panel-title">Create New Task</h3>
 		  </div>
 		  <div class="panel-body">
-		  
+		  <?php if($error) {
+						echo $errorbox;
+					} ?>
  
 
 		
-			<form>
+			<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">
 					<div class="form-group">
 						<input type="text" class="form-control" id="title" name="title" placeholder="Task title">
 					</div>
@@ -129,7 +148,7 @@
 					
 					
 					<div class="form-group">
-						<textarea class="form-control" rows="8" id="description" name="decription" placeholder="Task Description"></textarea>
+						<textarea class="form-control" rows="8" id="description" name="description" placeholder="Task Description"></textarea>
 					</div>
 					<div class="form-group">
 						<p>Task Subject:</p>
