@@ -7,35 +7,23 @@ session_start();
   header("Location: dashboard.php");
   exit;
  }
+$errormsg = "";
 $error = false;
+
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
+	 $todaydate =  date("Y-m-d");
 	// clean user inputs to prevent sql injections
-	
-	$firstname = trim($_POST['firstname']);
-	$firstname = strip_tags($firstname);
-	$firstname = htmlspecialchars($firstname);
-	
-	$lastname = trim($_POST['lastname']);
-	$lastname = strip_tags($lastname);
-	$lastname = htmlspecialchars($lastname);
-	
-	$email = trim($_POST['email']);
-	$email = strip_tags($email);
-	$email = htmlspecialchars($email);
-	
-	$pwd = trim($_POST['pwd']);
-	$pwd = strip_tags($pwd);
-	$pwd = htmlspecialchars($pwd);
-	
-	$id = trim($_POST['id']);
-	$id = strip_tags($id);
-	$id = htmlspecialchars($id);
+	 $email = mysqli_real_escape_string($db,$_POST['email']);
+     $pwd = mysqli_real_escape_string($db,$_POST['pwd']); 
+	 $firstname = mysqli_real_escape_string($db, $_POST['firstname']);
+	 $lastname = mysqli_real_escape_string($db, $_POST['lastname']);
+	 $id = mysqli_real_escape_string($db, $_POST['id']);
 	
 	// email validation
 	if ( !filter_var($email,FILTER_VALIDATE_EMAIL) ) {
 		$error = true;
-		$emailError = "Please enter valid email address.";
+		$errormsg .= "Please enter valid email address.";
 	} else {
 		//  email exist or not
 		$sql = "SELECT email FROM users WHERE email='$email'";
@@ -46,12 +34,7 @@ $error = false;
       
 		// If result matched $myusername and $mypassword, table row must be 1 row
 		
-		if($count == 1) {
-        
-			$_SESSION['userId'] = $row["userId"];
-         
-			header("location: dashboard.php");
-		}else {
+		if($count > 0) {
          $error = true;
       }
 	}
@@ -59,44 +42,35 @@ $error = false;
 	//studentID val
 	if(empty($id)){
 		$error=true;
-		$studentIDError="Please enter youur student ID.";
+		$errormsg .="Please enter youur student ID.";
 	}
 	else if(strlen($id)!=8){
 		$error=true;
-		$studentIDError="Must be 8 characters long.";
+		$errormsg .="Must be 8 characters long.";
 	}
 	else if(!preg_match("/^(?:0|[1-9][0-9]*)$/",$id)){
-		$id=true;
-		$studentIDError="May only contain numbers.";
+		$error=true;
+		$errormsg .="May only contain numbers.";
 	}
 	// password validation
 	if (empty($pwd)){
 		$error = true;
-		$passError = "Please enter password.";
+		$errormsg .= "Please enter password.";
 	} else if(strlen($pwd) < 6) {
 		$error = true;
-		$passError = "Password must have atleast 6 characters.";
+		$errormsg .= "Password must have atleast 6 characters.";
 	}
 	// password encrypt using SHA256();
 	$password = hash('sha256', $pwd);
 	if( !$error ) {
-		$query = "INSERT INTO users(firstName,lastName,studentId,email,password) VALUES('$firstname','$lastname','$id','$email','$pwd')";
-		$res = mysql_query($query);
-		if ($res) {
-			$errTyp = "success";
-			$errMSG = "Successfully registered, you may login now";
-			unset($firstname);
-			unset($lastname);
-			unset($id);
-			unset($email);
-			unset($pwd);
-			header("location: index.php");
-		} else {
-			$errTyp = "danger";
-			$errMSG = "Something went wrong, try again later...";
-		}
+		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate')";
+		mysqli_query($db,$query);
+		$taskId = mysqli_insert_id($db);
+		header("location: index.php?success=1");
 	}
-} ?>
+} 
+$errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again. $errormsg</div>";
+?>
 
 <html lang="en"><head>
     <meta charset="utf-8">
@@ -140,6 +114,11 @@ $error = false;
 					</h3>
 				</div>
 				<div class="panel-body">
+				<?php
+				if($error){
+					echo($errorbox);
+				}
+				?>
 					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
 						<div class="form-group">
 							<input type="text" class="form-control" id="email" name="email" placeholder="Email">
@@ -156,10 +135,10 @@ $error = false;
 						<div class="form-group">
 						<p>Select a discipline</p>
 							<select class="form-control" name="discipline" id="discipline">
-								<option value="one">Education and Health Sciences</option>
-								<option value="two">Arts and Humanities</option>
-								<option value="three">Science and Engineering</option>
-								<option value="four">Business</option>
+								<option value="Education and Health Sciences">Education and Health Sciences</option>
+								<option value="Arts and Humanities">Arts and Humanities</option>
+								<option value="Science and Engineering">Science and Engineering</option>
+								<option value="Business">Business</option>
 							</select>
 						</div>			
 						<div class="form-group">

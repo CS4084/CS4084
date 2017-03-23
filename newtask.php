@@ -11,7 +11,7 @@
    
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
-	if(true || isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_FILES['taskfile']) && isset($_POST['discipline']))
+	if(true || isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_FILES['taskfile']) && isset($_POST['discipline']) && isset($_POST['tags']))
 	{
 	  $todaydate =  date("Y-m-d");
 	
@@ -26,6 +26,9 @@
 	  $completiondeadline = mysqli_real_escape_string($db,$_POST['completiondeadline']);
 	  $discipline = mysqli_real_escape_string($db,$_POST['discipline']);
 	  $userid = $_SESSION['userId'];
+	  $tags = mysqli_real_escape_string($db,$_POST['tags']);
+	  $tagarray = explode(",", $tags);
+	  
 	  
 	  
 	  if(!is_numeric($_POST['wordcount']) || !is_numeric($_POST['pagecount']))
@@ -55,7 +58,7 @@
 	  
 	  
 	  if(!$error) {
-	        $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, taskSubject) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', '$discipline')";
+	        $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, taskSubject, taskDate) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', '$discipline', '$todaydate')";
 	        mysqli_query($db,$sql);
 	        $taskId = mysqli_insert_id($db);
 		    $filepath = "uploads/tasks/$taskId/$file_name";
@@ -63,6 +66,37 @@
 		    mysqli_query($db,$sql);
 		    mkdir("uploads/tasks/$taskId");
 		    move_uploaded_file($file_tmp,$filepath);
+			$tagid = 0;
+			
+			for($i = 0; $i < count($tagarray); $i++)
+			{
+				$tagarray[$i] = trim($tagarray[$i]);
+				$sql = "SELECT tag, FROM tags WHERE tag = $tagarray[$i]";
+				$result = mysqli_query($db,$sql);
+				$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+				$count = mysqli_num_rows($result);
+				
+				if ($count == 0)
+				{
+					//If the tag is not already in the table, add it
+					$sql = "INSERT INTO tags(tag) VALUES('$tagarray[$i]')";
+					mysqli_query($db,$sql);
+					$tagid = mysqli_insert_id($db);	
+				}
+				else{
+					
+				}
+					
+				
+				//Add the task tags to the DB
+				$sql = "INSERT INTO task_tags(taskId, tagId) VALUES('$taskId','$tagId')";
+				mysqli_query($db,$sql);
+			}
+			
+			
+			
+			
+			
 	        header("Location: task.php?id=" . $taskId);
 	  }
 	}
@@ -112,13 +146,13 @@
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav">
                     <li>
-                        <a href="dashboard.html">Dashboard</a>
+                        <a href="dashboard.php">Dashboard</a>
                     </li>
                     <li>
-                        <a href="profile.html">My Profile</a>
+                        <a href="profile.php">My Profile</a>
                     </li>
                     <li>
-                        <a href="claimedtasks.html">Claimed Tasks</a>
+                        <a href="claimedtasks.php">Claimed Tasks</a>
                     </li>
 					   
                 </ul>
@@ -168,7 +202,9 @@
 		  <div class="panel-body">
 		  <?php if($error) {
 						echo $errorbox;
-					} ?>
+					}
+
+				?>
  
 
 		
@@ -211,6 +247,10 @@
 					<p>Task Completetion Deadline</p>
 						<input type="date" class="form-control" id="completiondeadline" name="completiondeadline">
 						
+					</div>
+					<div class="form-group">
+					<p>Enter tags for your task, seperated by commas:
+						<input type="text" class="form-control" id="tags" name="tags" placeholder="Tags">
 					</div>
 					<div class="form-group">
 						<input type="file" name="taskfile" />

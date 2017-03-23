@@ -10,6 +10,14 @@
   exit;
  }
  $error = false;
+ 
+ $registered = false;
+ $registersuccessbox = "<div class='alert alert-success' role='alert'><span class='glyphicon glyphicon-ok'></span>  Successfully registered, you may now log in.</div>";
+ if(isset($_GET['success']))
+ {
+	$registered = true;
+ }
+ 
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
  
  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Invalid email or password.</div>";
@@ -26,8 +34,9 @@
 	{
       $myemail = mysqli_real_escape_string($db,$_POST['email']);
       $mypassword = mysqli_real_escape_string($db,$_POST['password']); 
+	  $hashpwd = hash('sha256',$mypassword);
       
-      $sql = "SELECT userId FROM users WHERE email = '$myemail' and password = '$mypassword'";
+      $sql = "SELECT userId FROM users WHERE email = '$myemail' and password = '$hashpwd'";
       $result = mysqli_query($db,$sql);
 	  $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
       $count = mysqli_num_rows($result);
@@ -99,7 +108,10 @@
 				<div class="panel-body">
 					<?php if($error) {
 						echo $errorbox;
-					} ?>
+					} 
+					
+					if($registered)
+						echo $registersuccessbox?>
 					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
 						<div class="form-group">
 							<input type="text" class="form-control" id="email" name="email" placeholder="Email">
