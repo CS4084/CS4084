@@ -6,18 +6,17 @@
    header("Location: index.php");
    exit;
   }
-  
-   $error = false;
-   $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again.</div>";
+  $errormsg = "";
+  $error = false;
+   
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
 	if(true || isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_FILES['taskfile']) && isset($_POST['discipline']))
 	{
+	  $todaydate =  date("Y-m-d");
+	
 	  $file_name = $_FILES['taskfile']['name'];
-      $file_size =$_FILES['taskfile']['size'];
       $file_tmp =$_FILES['taskfile']['tmp_name'];
-	  move_uploaded_file($file_tmp,"uploads/".$file_name);
-	  
 	  $title = mysqli_real_escape_string($db,$_POST['title']);
 	  $type = mysqli_real_escape_string($db,$_POST['type']);
 	  $description = mysqli_real_escape_string($db,$_POST['description']);
@@ -26,10 +25,46 @@
 	  $claimdeadline = mysqli_real_escape_string($db,$_POST['claimdeadline']);
 	  $completiondeadline = mysqli_real_escape_string($db,$_POST['completiondeadline']);
 	  $discipline = mysqli_real_escape_string($db,$_POST['discipline']);
-	  $userid = 1;
+	  $userid = $_SESSION['userId'];
 	  
-	  $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, filePath) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', 'uploads/$file_name)'";
-	  exec($sql);
+	  
+	  if(!is_numeric($_POST['wordcount']) || !is_numeric($_POST['pagecount']))
+		  $error = true;
+	  
+	  
+	  if($todaydate > $claimdeadline || $todaydate > $completiondeadline){
+		  $errormsg .= "<br>Claim and completion deadlines must be after today.";
+		  $error = true;
+	    }
+		
+		
+	  if ($claimdeadline > $completiondeadline){
+	  	  $errormsg .= "<br>Claim deadline must be before the completion deadline.";
+		  $error = true;
+	    }
+		
+		$claimdate = date_parse($claimdeadline);
+		$completiondate = date_parse($completiondeadline);
+		
+		if(($claimdate["error_count"] !== 0 && !checkdate($claimdate["month"], $claimdate["day"], $claimdate["year"]))
+			 || ($completiondate["error_count"] !== 0 && !checkdate($completiondate["month"], $completiondate["day"], $completiondate["year"]))){
+			$errormsg .= "<br>Invalid date.";
+			$error = true;
+		 }
+		
+	  
+	  
+	  if(!$error) {
+	        $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, taskSubject) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', '$discipline')";
+	        mysqli_query($db,$sql);
+	        $taskId = mysqli_insert_id($db);
+		    $filepath = "uploads/tasks/$taskId/$file_name";
+		    $sql = "INSERT INTO file_paths VALUES('$taskId', '$filepath')";
+		    mysqli_query($db,$sql);
+		    mkdir("uploads/tasks/$taskId");
+		    move_uploaded_file($file_tmp,$filepath);
+	        header("Location: task.php?id=" . $taskId);
+	  }
 	}
 	
 	else
@@ -37,7 +72,7 @@
  }
   
   
-  
+  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again. $errormsg</div>";
 
 ?>
 
@@ -153,10 +188,10 @@
 					<div class="form-group">
 						<p>Task Subject:</p>
 							<select class="form-control" name="discipline" id="discipline">
-								<option value="one">Education and Health Sciences</option>
-								<option value="two">Arts and Humanities</option>
-								<option value="three">Science and Engineering</option>
-								<option value="four">Business</option>
+								<option value="Education and Health Sciences">Education and Health Sciences</option>
+								<option value="Arts and Humanities">Arts and Humanities</option>
+								<option value="Science and Engineering">Science and Engineering</option>
+								<option value="Business">Business</option>
 							</select>
 						</div>
 					<div class="form-group">

@@ -80,7 +80,7 @@ $error = false;
 	// password encrypt using SHA256();
 	$password = hash('sha256', $pwd);
 	if( !$error ) {
-		$query = "INSERT INTO users(firstName,lastName,id,email,pwd) VALUES('$firstname','$lastname','$id','$email','$pwd')";
+		$query = "INSERT INTO users(firstName,lastName,studentId,email,password) VALUES('$firstname','$lastname','$id','$email','$pwd')";
 		$res = mysql_query($query);
 		if ($res) {
 			$errTyp = "success";

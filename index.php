@@ -110,7 +110,7 @@
 						<button type="submit" class="btn btn-default">Log In</button>
 					</form>
 					<div class="register">
-						<a href="register.html">Not a member? Click here to register now.</a>
+						<a href="register.php">Not a member? Click here to register now.</a>
 					</div>
 				</div>
 			</div>
