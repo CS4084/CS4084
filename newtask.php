@@ -11,7 +11,43 @@
    
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
-	if(true || isset($_POST['title']) && isset($_POST['type']) && isset($_POST['description']) && isset($_POST['pagecount']) && isset($_POST['wordcount']) && isset($_POST['claimdeadline']) && isset($_POST['completiondeadline']) && isset($_FILES['taskfile']) && isset($_POST['discipline']) && isset($_POST['tags']))
+	
+	 
+	 //Error checking
+	 if(empty(trim($_POST['title'])))
+		 $errormsg .= "Please enter a title.<br>";
+	 
+	 if(empty(trim($_POST['type'])))
+		 $errormsg .= "Please enter a task type.<br>";
+	 
+	 if(empty(trim($_POST['description'])))
+		 $errormsg .= "Please enter a description.<br>";
+	 
+	 if(empty(trim($_POST['pagecount'])))
+		 $errormsg .= "Please enter the page count.<br>";
+	 
+	 if(empty(trim($_POST['wordcount'])))
+		 $errormsg .= "Please enter the word count.<br>";
+	 
+	 if(empty(trim($_POST['claimdeadline'])))
+		 $errormsg .= "Please enter a claim deadline.<br>";
+	 
+	 if(empty(trim($_POST['completiondeadline'])))
+		 $errormsg .= "Please enter a completion deadline.<br>";
+	 
+	 if(empty($_FILES['taskfile']['tmp_name']))
+		 $errormsg .= "Please choose a file to upload.<br>";
+	 
+	 if(empty(trim($_POST['discipline'])))
+		 $errormsg .= "Please select a task subject.<br>";
+	 
+	 if(empty(trim($_POST['tags'])))
+		 $errormsg .= "Please enter at least one tag.";
+	 
+	 
+	 
+	 
+	if($errormsg == "")//if no errors
 	{
 	  $todaydate =  date("Y-m-d");
 	
@@ -66,12 +102,13 @@
 		    mysqli_query($db,$sql);
 		    mkdir("uploads/tasks/$taskId");
 		    move_uploaded_file($file_tmp,$filepath);
-			$tagid = 0;
+
 			
 			for($i = 0; $i < count($tagarray); $i++)
 			{
+				
 				$tagarray[$i] = trim($tagarray[$i]);
-				$sql = "SELECT tag, FROM tags WHERE tag = $tagarray[$i]";
+				$sql = "SELECT tagId FROM tags WHERE tag = '$tagarray[$i]'";
 				$result = mysqli_query($db,$sql);
 				$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
 				$count = mysqli_num_rows($result);
@@ -84,12 +121,12 @@
 					$tagid = mysqli_insert_id($db);	
 				}
 				else{
-					
+					$tagid = $row['tagId'];
 				}
 					
 				
 				//Add the task tags to the DB
-				$sql = "INSERT INTO task_tags(taskId, tagId) VALUES('$taskId','$tagId')";
+				$sql = "INSERT INTO task_tags(taskId, tagId) VALUES('$taskId','$tagid')";
 				mysqli_query($db,$sql);
 			}
 			
@@ -106,7 +143,7 @@
  }
   
   
-  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again. $errormsg</div>";
+  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: <br> $errormsg</div>";
 
 ?>
 
@@ -115,6 +152,7 @@
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
     <title>Create a New Task - Proofreaders</title>
@@ -140,7 +178,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
+                <a class="navbar-brand" href="dashboard.php"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
             </div>
             <!-- Navbar links -->
             <div class="collapse navbar-collapse" id="navbar">
@@ -176,18 +214,7 @@
 		<!-- Left Column -->
 		<div class="col-sm-3">
 
-			<!-- List-Group Panel -->
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-home"></span> Dashboard</h1>
-				</div>
-				<div class="list-group">
-					<a href="logout.php" class="list-group-item">Log out</a>
-					<a href="newtask.php" class="list-group-item">Create a new task</a>
-				
-				</div>
-			</div>
-
+			
 	
 		</div><!--/Left Column-->
   
@@ -197,7 +224,7 @@
 			
 		<div class="panel panel-default">
 		  <div class="panel-heading">
-			<h3 class="panel-title">Create New Task</h3>
+			<h3 class="panel-title"><span class="glyphicon glyphicon-plus"></span>  Create New Task</h3>
 		  </div>
 		  <div class="panel-body">
 		  <?php if($error) {
@@ -210,16 +237,16 @@
 		
 			<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">
 					<div class="form-group">
-						<input type="text" class="form-control" id="title" name="title" placeholder="Task title">
+						<input type="text" class="form-control" id="title" name="title" placeholder="Task title" value="<?php echo isset($_POST['title']) ? htmlspecialchars($_POST['title']) : '' ?>">
 					</div>
 					
 					<div class="form-group">
-						<input type="text" class="form-control" id="type" name="type" placeholder="Task Type (e.g. Thesis, Project)">
+						<input type="text" class="form-control" id="type" name="type" placeholder="Task Type (e.g. Thesis, Project)" value="<?php echo isset($_POST['type']) ? htmlspecialchars($_POST['type']) : '' ?>">
 					</div>
 					
 					
 					<div class="form-group">
-						<textarea class="form-control" rows="8" id="description" name="description" placeholder="Task Description"></textarea>
+						<textarea class="form-control" rows="8" id="description" name="description" placeholder="Task Description"><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : '' ?></textarea>
 					</div>
 					<div class="form-group">
 						<p>Task Subject:</p>
@@ -232,25 +259,25 @@
 						</div>
 					<div class="form-group">
 					
-						<input type="number" class="form-control" id="pagecount" name="pagecount" placeholder="Page Count">
+						<input type="number" class="form-control" id="pagecount" name="pagecount" placeholder="Page Count" value="<?php echo isset($_POST['pagecount']) ? htmlspecialchars($_POST['pagecount']) : '' ?>">
 					</div>
 					<div class="form-group">
 					
-						<input type="number" class="form-control" id="wordcount" name="wordcount" placeholder="Word Count">
+						<input type="number" class="form-control" id="wordcount" name="wordcount" placeholder="Word Count" value="<?php echo isset($_POST['wordcount']) ? htmlspecialchars($_POST['wordcount']) : '' ?>">
 					</div>
 					
 					<div class="form-group">
 					<p>Task Claim Deadline (Task will be unpublished if not claimed by this date.)</p>
-						<input type="date" class="form-control" id="claimdeadline" name="claimdeadline">
+						<input type="date" class="form-control" id="claimdeadline" name="claimdeadline" value="<?php echo isset($_POST['claimdeadline']) ? htmlspecialchars($_POST['claimdeadline']) : '' ?>">
 					</div>
 					<div class="form-group">
 					<p>Task Completetion Deadline</p>
-						<input type="date" class="form-control" id="completiondeadline" name="completiondeadline">
+						<input type="date" class="form-control" id="completiondeadline" name="completiondeadline" value="<?php echo isset($_POST['completiondeadline']) ? htmlspecialchars($_POST['completiondeadline']) : '' ?>">
 						
 					</div>
 					<div class="form-group">
 					<p>Enter tags for your task, seperated by commas:
-						<input type="text" class="form-control" id="tags" name="tags" placeholder="Tags">
+						<input type="text" class="form-control" id="tags" name="tags" placeholder="Tags" value="<?php echo isset($_POST['tags']) ? htmlspecialchars($_POST['tags']) : '' ?>">
 					</div>
 					<div class="form-group">
 						<input type="file" name="taskfile" />

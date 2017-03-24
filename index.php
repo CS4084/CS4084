@@ -46,7 +46,6 @@
       if($count == 1) {
         
          $_SESSION['userId'] = $row["userId"];
-         
          header("location: dashboard.php");
       }else {
          $error = true;
@@ -66,7 +65,7 @@
 
 <html lang="en"><head>
     <meta charset="utf-8">
-
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <title>Login - Proofreaders</title>
 
