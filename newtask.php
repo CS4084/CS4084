@@ -37,21 +37,44 @@
 	 
 	 if(empty($_FILES['taskfile']['tmp_name']))
 		 $errormsg .= "Please choose a file to upload.<br>";
+	 else {
+		 //Check file format
+		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'odt', 'rtf');
+		 $file_name = $_FILES['taskfile']['name'];
+		 $nameparts = explode("." ,$file_name);
+		 if( !in_array( strtolower( end($nameparts) ), $okExtensions) )
+			$errormsg .= "Invalid file format <br>";
+	 }
+	 
 	 
 	 if(empty(trim($_POST['discipline'])))
 		 $errormsg .= "Please select a task subject.<br>";
 	 
 	 if(empty(trim($_POST['tags'])))
 		 $errormsg .= "Please enter at least one tag.";
+	 else{
+		 $tags = mysqli_real_escape_string($db,$_POST['tags']);
+		 $tagarray = explode(",", $tags); 
+		 foreach ($tagarray as &$tag) {
+				$tag = trim($tag); //remove spaces
+			}
+		 $tagarray = array_filter($tagarray);//array_filter removes empty entries from the array
+		 
+		 if(sizeof($tagarray) < 1)
+			 $errormsg .= "Please enter at least one tag.";
+		 else if(sizeof($tagarray) > 4)
+			 $errormsg .= "Please enter at most 4 tags.";
+	 }
+	 
+	 
 	 
 	 
 	 
 	 
 	if($errormsg == "")//if no errors
 	{
+		
 	  $todaydate =  date("Y-m-d");
-	
-	  $file_name = $_FILES['taskfile']['name'];
       $file_tmp =$_FILES['taskfile']['tmp_name'];
 	  $title = mysqli_real_escape_string($db,$_POST['title']);
 	  $type = mysqli_real_escape_string($db,$_POST['type']);
@@ -62,8 +85,8 @@
 	  $completiondeadline = mysqli_real_escape_string($db,$_POST['completiondeadline']);
 	  $discipline = mysqli_real_escape_string($db,$_POST['discipline']);
 	  $userid = $_SESSION['userId'];
-	  $tags = mysqli_real_escape_string($db,$_POST['tags']);
-	  $tagarray = explode(",", $tags);
+	  
+	  
 	  
 	  
 	  
@@ -107,7 +130,6 @@
 			for($i = 0; $i < count($tagarray); $i++)
 			{
 				
-				$tagarray[$i] = trim($tagarray[$i]);
 				$sql = "SELECT tagId FROM tags WHERE tag = '$tagarray[$i]'";
 				$result = mysqli_query($db,$sql);
 				$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
@@ -276,10 +298,11 @@
 						
 					</div>
 					<div class="form-group">
-					<p>Enter tags for your task, seperated by commas:
+					<p>Enter tags for your task, seperated by commas: (Max 4 tags)
 						<input type="text" class="form-control" id="tags" name="tags" placeholder="Tags" value="<?php echo isset($_POST['tags']) ? htmlspecialchars($_POST['tags']) : '' ?>">
 					</div>
 					<div class="form-group">
+					<p>Accepted file formats: <kbd>.doc</kbd> <kbd>.docx</kbd> <kbd>.pdf</kbd> <kbd>.txt</kbd> <kbd>.odt</kbd> <kbd>.rtf</kbd>.</p>
 						<input type="file" name="taskfile" />
 					</div>
 					
