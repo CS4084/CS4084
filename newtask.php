@@ -1,14 +1,12 @@
 <?php 
   include('config.php');
   session_start();
-  
   if ( $_SESSION['userId']=="") {
    header("Location: index.php");
    exit;
   }
   $errormsg = "";
   $error = false;
-   
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
 	
@@ -36,12 +34,22 @@
 		 $errormsg .= "Please enter a completion deadline.<br>";
 	 
 	 if(empty($_FILES['taskfile']['tmp_name']))
-		 $errormsg .= "Please choose a file to upload.<br>";
+		 $errormsg .= "Please choose a task file to upload.<br>";
 	 else {
 		 //Check file format
 		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'odt', 'rtf');
 		 $file_name = $_FILES['taskfile']['name'];
 		 $nameparts = explode("." ,$file_name);
+		 if( !in_array( strtolower( end($nameparts) ), $okExtensions) )
+			$errormsg .= "Invalid file format <br>";
+	 }
+	 if(empty($_FILES['samplefile']['tmp_name']))
+		 $errormsg .= "Please choose a sample file to upload.<br>";
+	 else {
+		 //Check file format
+		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'odt', 'rtf');
+		 $samplefilename = $_FILES['samplefile']['name'];
+		 $nameparts = explode("." ,$samplefilename);
 		 if( !in_array( strtolower( end($nameparts) ), $okExtensions) )
 			$errormsg .= "Invalid file format <br>";
 	 }
@@ -76,6 +84,7 @@
 		
 	  $todaydate =  date("Y-m-d");
       $file_tmp =$_FILES['taskfile']['tmp_name'];
+	  $samplefiletmp = $_FILES['samplefile']['tmp_name'];
 	  $title = mysqli_real_escape_string($db,$_POST['title']);
 	  $type = mysqli_real_escape_string($db,$_POST['type']);
 	  $description = mysqli_real_escape_string($db,$_POST['description']);
@@ -121,15 +130,19 @@
 	        mysqli_query($db,$sql);
 	        $taskId = mysqli_insert_id($db);
 		    $filepath = "uploads/tasks/$taskId/$file_name";
-		    $sql = "INSERT INTO file_paths VALUES('$taskId', '$filepath')";
+			$samplefilepath = "uploads/tasks/$taskId/sample/$samplefilename";
+		    $sql = "INSERT INTO file_paths VALUES('$taskId', '$filepath', '$samplefilepath')";
 		    mysqli_query($db,$sql);
 		    mkdir("uploads/tasks/$taskId");
+			mkdir("uploads/tasks/$taskId/sample");
+			
 		    move_uploaded_file($file_tmp,$filepath);
+			move_uploaded_file($samplefiletmp,$samplefilepath);
 
 			
 			for($i = 0; $i < count($tagarray); $i++)
 			{
-				
+				$tagarray[$i] = strtolower($tagarray[$i]);
 				$sql = "SELECT tagId FROM tags WHERE tag = '$tagarray[$i]'";
 				$result = mysqli_query($db,$sql);
 				$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
@@ -156,7 +169,7 @@
 			
 			
 			
-	        header("Location: task.php?id=" . $taskId);
+	        header("Location: task.php?taskId=" . $taskId);
 	  }
 	}
 	
@@ -303,8 +316,17 @@
 					</div>
 					<div class="form-group">
 					<p>Accepted file formats: <kbd>.doc</kbd> <kbd>.docx</kbd> <kbd>.pdf</kbd> <kbd>.txt</kbd> <kbd>.odt</kbd> <kbd>.rtf</kbd>.</p>
+					<p>Upload a <strong>sample</strong> of the document. This will be available for anyone to download.</p>
+					<input type="file" name="samplefile" />
+					</div>
+					<br>
+					<br>
+					<div class="form-group">
+						<p>Upload the <strong>full</strong> document here.</p>
 						<input type="file" name="taskfile" />
 					</div>
+					
+					
 					
 					<button type="submit" class="btn btn-default">Create Task</button>
 				</form>

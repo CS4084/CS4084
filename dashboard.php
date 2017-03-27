@@ -7,9 +7,15 @@
     exit;
   }
   
+  
+  $taskhtml = "";
+  $sql = "SELECT * task";
+  $result = mysqli_query($db,$sql);
+  while($row = mysqli_fetch_array($result, MYSQLI_ASSOC))
+	$taskhtml .= "<div class='row'><article class='col-xs-12'><h2>$row[taskTitle]</h2><p>Phosfluorescently engage worldwide methodologies with web-enabled technology. Interactively coordinate proactive e-commerce via process-centric 'outside the box' thinking. Completely pursue scalable customer service through sustainable potentialities.</p><p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p><p class='pull-right'><span class='label label-default'>keyword</span> <span class='label label-default'>tag</span> <span class='label label-default'>post</span></p><ul class='list-inline'><li><a href='#'>Today</a></li><li><a href='#'><span class='glyphicon glyphicon-comment'></span> 2 Comments</a></li><li><a href ='flag.php'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li></ul></article></div><hr>";
+  
  ?>
   
-
 <!DOCTYPE html>
 <!-- Template by Quackit.com -->
 <html lang="en">
@@ -96,49 +102,8 @@
 			
 		
 			<!-- Articles -->
-			<div class="row">
-				<article class="col-xs-12">
-					<h2>Premier Niche Markets</h2>
-					<p>Phosfluorescently engage worldwide methodologies with web-enabled technology. Interactively coordinate proactive e-commerce via process-centric "outside the box" thinking. Completely pursue scalable customer service through sustainable potentialities.</p>
-					<p><a href="task.php"><button class="btn btn-default">Read More</button></a></p>
-					<p class="pull-right"><span class="label label-default">keyword</span> <span class="label label-default">tag</span> <span class="label label-default">post</span></p>
-					<ul class="list-inline">
-						<li><a href="#">Today</a></li>
-						<li><a href="#"><span class="glyphicon glyphicon-comment"></span> 2 Comments</a></li>
-						<li><a href ="flag.php"><span class="glyphicon glyphicon-flag"></span> Flag as inappropriate</a></li>
-						
-					</ul>
-				</article>
-			</div>
-			<hr>
-			<div class="row">
-				<article class="col-xs-12">
-					<h2>Proactively Envisioned</h2>
-					<p>Seamlessly visualize quality intellectual capital without superior collaboration and idea-sharing. Holistically pontificate installed base portals after maintainable products. Proactively envisioned multimedia based expertise and cross-media growth strategies.</p>
-					<p><button class="btn btn-default">Read More</button></p>
-					<p class="pull-right"><span class="label label-default">keyword</span> <span class="label label-default">tag</span> <span class="label label-default">post</span></p>
-					<ul class="list-inline">
-						<li><a href="#">Yesterday</a></li>
-						<li><a href="#"><span class="glyphicon glyphicon-comment"></span> 21 Comments</a></li>
-						<li><a href ="flag.php"><span class="glyphicon glyphicon-flag"></span> Flag as inappropriate</a></li>
-					</ul>
-				</article>
-			</div>
-			<hr>      
-			<div class="row">
-				<article class="col-xs-12">
-					<h2>Completely Synergize</h2>
-					<p>Completely synergize resource taxing relationships via premier niche markets. Professionally cultivate one-to-one customer service with robust ideas. Dynamically innovate resource-leveling customer service for state of the art customer service.</p>
-					<p><button class="btn btn-default">Read More</button></p>
-					<p class="pull-right"><span class="label label-default">keyword</span> <span class="label label-default">tag</span> <span class="label label-default">post</span></p>
-					<ul class="list-inline">
-						<li><a href="#">2 Days Ago</a></li>
-						<li><a href="#"><span class="glyphicon glyphicon-comment"></span> 12 Comments</a></li>
-						<li><a href ="flag.php"><span class="glyphicon glyphicon-flag"></span> Flag as inappropriate</a></li>
-					</ul>
-				</article>
-			</div>
-			<hr>
+			
+			<?php echo $taskhtml;?>
 		</div><!--/Center Column-->
 
 
