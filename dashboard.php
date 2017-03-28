@@ -8,11 +8,39 @@
   }
   
   
+  
+  
+  
+  $taglist = "";
   $taskhtml = "";
-  $sql = "SELECT * task";
+  $sql = "SELECT * FROM task JOIN task_claimed ON task.taskId != task_claimed.taskId";
   $result = mysqli_query($db,$sql);
   while($row = mysqli_fetch_array($result, MYSQLI_ASSOC))
-	$taskhtml .= "<div class='row'><article class='col-xs-12'><h2>$row[taskTitle]</h2><p>Phosfluorescently engage worldwide methodologies with web-enabled technology. Interactively coordinate proactive e-commerce via process-centric 'outside the box' thinking. Completely pursue scalable customer service through sustainable potentialities.</p><p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p><p class='pull-right'><span class='label label-default'>keyword</span> <span class='label label-default'>tag</span> <span class='label label-default'>post</span></p><ul class='list-inline'><li><a href='#'>Today</a></li><li><a href='#'><span class='glyphicon glyphicon-comment'></span> 2 Comments</a></li><li><a href ='flag.php'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li></ul></article></div><hr>";
+	  
+  {
+	  $sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$[rowtaskId]'";
+	  $result2 = mysqli_query($db,$sql2);
+	   while($row1 = mysqli_fetch_array($result2, MYSQLI_ASSOC))
+		   
+			{
+			   $taglist .= "<span class='label label-default'>$row[tag]</span>  ";
+			   
+			}
+	$taskhtml .= "<div class='row'>
+				<article class='col-xs-12'>
+					<h2>$row[taskTitle]</h2>
+					<p>$row[taskDesc]</p>
+					<p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p>
+					<p class='pull-right'>$taglist</p>
+					<ul class='list-inline'>
+						<li><a href='#'>27/03/17</a></li>
+						<li><a href ='flag.php'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
+						
+					</ul>
+				</article>
+			</div>
+  <hr>";
+  }
   
  ?>
   
