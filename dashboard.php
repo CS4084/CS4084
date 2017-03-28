@@ -1,5 +1,6 @@
 <?php 
   include('config.php');
+  include('displaytasks.php');
   session_start();
 
   if ( $_SESSION['userId']=="") {
@@ -7,37 +8,9 @@
     exit;
   }
   
-  
-  
-  $taskhtml = "";
+ 
   $sql = "SELECT * FROM task WHERE NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId)) ORDER BY taskDate DESC";
-  $result = mysqli_query($db,$sql);
-  while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) 
-  {
-	$taglist = "";
-	
-	//Get the tags from the DB
-    $sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$row[taskId]'";
-	$result2 = mysqli_query($db,$sql2);
-	while($row1 = mysqli_fetch_array($result2, MYSQLI_ASSOC))
-	    $taglist .= "<span class='label label-default'>$row1[tag]</span>  ";
-			
-	//Create the HTML element	
-	$taskhtml .= "<div class='row'>
-				<article class='col-xs-12'>
-					<h2>$row[taskTitle]</h2>
-					<p>$row[taskDesc]</p>
-					<p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p>
-					<p class='pull-right'>$taglist</p>
-					<ul class='list-inline'>
-						<li>Submitted on $row[taskDate]</a></li>
-						<li><a href ='flag.php?taskId=$row[taskId]'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
-						
-					</ul>
-				</article>
-			</div>
-  <hr>";
-  }
+  $taskhtml = displayTasks($sql);
   
  ?>
   
@@ -45,6 +18,7 @@
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
     <title>Dashboard - Proofreader</title>
@@ -70,7 +44,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
+                <a class="navbar-brand" href="dashboard.php"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
             </div>
             <!-- Navbar links -->
             <div class="collapse navbar-collapse" id="navbar">
@@ -83,6 +57,9 @@
                     </li>
                     <li>
                         <a href="claimedtasks.php">Claimed Tasks</a>
+                    </li>
+					<li>
+                        <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
 					   
                 </ul>

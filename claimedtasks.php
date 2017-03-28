@@ -1,52 +1,20 @@
-<?php
+<?php 
   include('config.php');
+  include('displaytasks.php');
   session_start();
-  
+
   if ( $_SESSION['userId']=="") {
     header("Location: index.php");
     exit;
   }
- 
- $error = false;
- 
- 
- if ($_SERVER['REQUEST_METHOD'] == 'GET'){
-   
-   if(!isset($_GET['userId']))
-     $error = true;
-   
-   else {
-	 $userId = mysqli_real_escape_string($db,$_GET['userId']);
-	 $sql = "SELECT firstName, lastName, studentId, repScore, dateJoined, subjectStream FROM users NATURAL JOIN subject_streams WHERE userId = '$userId'";
-	 $result = mysqli_query($db,$sql);
-	 $count = mysqli_num_rows($result);
-	 
-	 if($count == 1)
-	 {
-		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-        $title = "Profile - " . $row['firstName'] . " " . $row['lastName'];	
-	 }
-	   
-	 else
-	   $error = true;
-   
-   }
- }
- else
-   $error = true;
- 
- //If the user in the GET parameter doesn't exist, or if no GET parameter is provided,
- //display the logged in user's profile info.
- if($error) {
-   $userId = $_SESSION['userId'];
-   $sql = "SELECT firstName, lastName, studentId, repScore, dateJoined, subjectStream FROM users NATURAL JOIN subject_streams WHERE userId = '$userId'";
-
-   $result = mysqli_query($db,$sql);
-   $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-   $title  = "My Profile";
- }
-?>
-
+  
+  
+  $userId = mysqli_real_escape_string($db, $_SESSION['userId']);
+  $sql = "SELECT * FROM task WHERE task.taskId IN (SELECT taskId FROM task_claimed WHERE userId = '$userId') ORDER BY taskDate DESC";
+  $taskhtml = displayTasks($sql);
+  
+ ?>
+  
 <!DOCTYPE html>
 <!-- Template by Quackit.com -->
 <html lang="en">
@@ -54,7 +22,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
-    <title>My Profile - Proofreader</title>
+    <title>Dashboard - Proofreader</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -85,10 +53,10 @@
                     <li>
                         <a href="dashboard.php">Dashboard</a>
                     </li>
-                    <li <?php if($error) echo "class='active'";?>>
+                    <li>
                         <a href="profile.php">My Profile</a>
                     </li>
-                    <li>
+                    <li  class="active">
                         <a href="claimedtasks.php">Claimed Tasks</a>
                     </li>
 					<li>
@@ -115,40 +83,22 @@
 
 		<!-- Left Column -->
 		<div class="col-sm-3">
-		
-
-		
-				
+	
 		</div><!--/Left Column-->
   
   
 		<!-- Center Column -->
 		<div class="col-sm-6">
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-user"></span> <?php echo $title; ?></h1>
-				</div>
-				<div class="panel-body">
-				<img src="images/avatar.png" id="avatar"/>
-				<ul class="list-group">
-					<li class="list-group-item">Name: <?php echo $row["firstName"] . " " . $row["lastName"]; ?></li>
-					<li class="list-group-item">Subject Stream: <?php echo $row["subjectStream"];?></li>
-					<li class="list-group-item">Reputation: <?php echo $row["repScore"];?></li>
-					<li class="list-group-item">Date joined: <?php echo $row["dateJoined"];?></li>
-					<li class="list-group-item"><a href="usertasks.php?userId=<?php echo $userId;?>">View open tasks</a></li>
-					<li class="list-group-item">ID: <?php echo $row["studentId"];?></li>
-				</ul>
-				</div>
-			</div>
-			
+			<!-- Articles -->
+			<?php echo $taskhtml;?>
 		</div><!--/Center Column-->
 
 
 	</div><!--/container-fluid-->
 	
 	<footer>
-
-       
+		
+        
         <div class="small-print">
         	<div class="container">
         		<p><a href="#">Terms &amp; Conditions</a> | <a href="#">Privacy Policy</a> | <a href="#">Contact</a></p>
@@ -156,8 +106,9 @@
         	</div>
         </div>
 	</footer>
+
 	
-	 <!-- jQuery -->
+    <!-- jQuery -->
     <script src="js/jquery-1.11.3.min.js"></script>
 
     <!-- Bootstrap Core JavaScript -->
