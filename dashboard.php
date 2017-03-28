@@ -9,23 +9,20 @@
   
   
   
-  
-  
-  $taglist = "";
   $taskhtml = "";
-  $sql = "SELECT * FROM task JOIN task_claimed ON task.taskId != task_claimed.taskId";
+  $sql = "SELECT * FROM task WHERE NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId)) ORDER BY taskDate DESC";
   $result = mysqli_query($db,$sql);
-  while($row = mysqli_fetch_array($result, MYSQLI_ASSOC))
-	  
+  while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) 
   {
-	  $sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$[rowtaskId]'";
-	  $result2 = mysqli_query($db,$sql2);
-	   while($row1 = mysqli_fetch_array($result2, MYSQLI_ASSOC))
-		   
-			{
-			   $taglist .= "<span class='label label-default'>$row[tag]</span>  ";
-			   
-			}
+	$taglist = "";
+	
+	//Get the tags from the DB
+    $sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$row[taskId]'";
+	$result2 = mysqli_query($db,$sql2);
+	while($row1 = mysqli_fetch_array($result2, MYSQLI_ASSOC))
+	    $taglist .= "<span class='label label-default'>$row1[tag]</span>  ";
+			
+	//Create the HTML element	
 	$taskhtml .= "<div class='row'>
 				<article class='col-xs-12'>
 					<h2>$row[taskTitle]</h2>
@@ -33,8 +30,8 @@
 					<p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p>
 					<p class='pull-right'>$taglist</p>
 					<ul class='list-inline'>
-						<li><a href='#'>27/03/17</a></li>
-						<li><a href ='flag.php'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
+						<li>Submitted on $row[taskDate]</a></li>
+						<li><a href ='flag.php?taskId=$row[taskId]'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
 						
 					</ul>
 				</article>

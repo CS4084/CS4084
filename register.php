@@ -17,9 +17,11 @@ $error = false;
 	 $email = mysqli_real_escape_string($db,$_POST['email']);
 	 $email = trim($_POST['email']);
      $pwd = mysqli_real_escape_string($db,$_POST['pwd']); 
+	 $pwd2 = mysqli_real_escape_string($db,$_POST['pwd2']); 
 	 $firstname = mysqli_real_escape_string($db, $_POST['firstname']);
 	 $lastname = mysqli_real_escape_string($db, $_POST['lastname']);
 	 $id = mysqli_real_escape_string($db, $_POST['id']);
+	 $discipline= mysqli_real_escape_string($db,$_POST['discipline']);
 	
 	// email validation, strips the email down to the last part and matches it against the allowed emails.
 	
@@ -39,35 +41,46 @@ $error = false;
 		if($count > 0) {
          $error = true;
 		}
-		if ( ! in_array($domain, $allowed))
+		if ( !in_array($domain, $allowed))
 		{
         $error = true;
-		$errormsg .= "Please enter valid UL email address";
+		$errormsg .= "<br>Please enter valid UL email address";
 		}
 	} else {
-		echo 'doot doot';
+		$error = true;
+		$errormsg .= "<br>Please enter valid UL email address";
 	}
 	
+	if(empty($discipline)){
+		$error = true;
+		$errormsg .="<br>Please choose a discipline.";
+		
+	}
 	//studentID val
 	if(empty($id)){
 		$error=true;
-		$errormsg .="Please enter youur student ID.";
+		$errormsg .="<br>Please enter youur student ID.";
 	}
 	else if(strlen($id)!=8){
 		$error=true;
-		$errormsg .="Student ID be 8 characters long.";
+		$errormsg .="<br>Student ID be 8 characters long.";
 	}
 	else if(!preg_match("/^(?:0|[1-9][0-9]*)$/",$id)){
 		$error=true;
-		$errormsg .="Student ID may only contain numbers.";
+		$errormsg .="<br>Student ID may only contain numbers.";
 	}
 	// password validation
 	if (empty($pwd)){
 		$error = true;
-		$errormsg .= "Please enter password.";
+		$errormsg .= "<br>Please enter password.";
 	} else if(strlen($pwd) < 6) {
 		$error = true;
-		$errormsg .= "Password must have atleast 6 characters.";
+		$errormsg .= "<br>Password must have atleast 6 characters.";
+	}
+	if($pwd != $pwd2)
+	{
+		$error = true;
+		$errormsg .= "<br>Passwords must match.";
 	}
 	// password encrypt using SHA256();
 	$password = hash('sha256', $pwd);
@@ -75,17 +88,15 @@ $error = false;
 		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate')";
 		mysqli_query($db,$query);
 		$userId=mysqli_insert_id($db);
-		if(isset($_GET['discipline']))
+		
+		$query=("INSERT INTO subject_streams(userId, subjectStream) VALUES ('$userId','$discipline')");
+		mysqli_query($db,$query);
+		if($query)
 		{
-			$discipline=$_GET['discipline'];
-			$query=("INSERT INTO subject_streams(userId, subjectStream) VALUES ('$userId','$discipline')");
-			mysqli_query($db,$query);
-			if($query)
-			{
-				echo "<br>".$discipline."inserted";
-			}
-
+			echo "<br>".$discipline."inserted";
 		}
+
+		
 
 		header("location: index.php?success=1");
 	}
@@ -142,25 +153,25 @@ $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon
 				?>
 					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
 						<div class="form-group">
-							<input type="text" class="form-control" id="email" name="email" placeholder="Email">
+							<input type="text" class="form-control" id="email" name="email" placeholder="Email" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
 						</div>
 						<div class="form-group">
-							<input type="text" class="form-control" id="firstname" name="firstname" placeholder="First Name">
+							<input type="text" class="form-control" id="firstname" name="firstname" placeholder="First Name" value="<?php echo isset($_POST['firstname']) ? htmlspecialchars($_POST['firstname']) : '' ?>">
 						</div>
 						<div class="form-group">
-							<input type="text" class="form-control" id="lastname" name="lastname" placeholder="Last Name">
+							<input type="text" class="form-control" id="lastname" name="lastname" placeholder="Last Name" value="<?php echo isset($_POST['lastname']) ? htmlspecialchars($_POST['lastname']) : '' ?>">
 						</div>
 						<div class="form-group">
-							<input type="text" class="form-control" id="id" name="id" placeholder="Student/Staff ID">
+							<input type="text" class="form-control" id="id" name="id" placeholder="Student/Staff ID" value="<?php echo isset($_POST['id']) ? htmlspecialchars($_POST['id']) : '' ?>">
 						</div>
 						<div class="form-group">
 						<p>Select a discipline</p>
 							<select class="form-control" name="discipline" id="discipline">
 								<option value="">Select...</option>
-								<option value="1">Education and Health Sciences</option>
-								<option value="2">Arts and Humanities</option>
-								<option value="3">Science and Engineering</option>
-								<option value="4">Business</option>
+								<option value="Education and Health Sciences">Education and Health Sciences</option>
+								<option value="Arts and Humanities">Arts and Humanities</option>
+								<option value="Science and Engineering">Science and Engineering</option>
+								<option value="Business">Business</option>
 							</select>
 						</div>			
 						<div class="form-group">

@@ -1,0 +1,61 @@
+User:
+userId
+firstName
+lastName
+studentId
+email
+password
+repScore
+dateJointed
+
+Subject Stream:
+userId
+SubjectStream
+
+Task:
+userId
+taskId
+taskTitle
+taskType
+taskSubject
+taskDesc
+taskTags
+noOfPages
+noOfWords
+taskClaimDeadline
+taskCompletionDeadline
+
+Task Claimed:
+taskId
+userId
+
+Task Completed:
+taskId
+userId
+feedback
+review
+
+Flagged tasks:
+taskId
+userId
+
+Banned users:
+modId
+bannedUserId
+
+Tags:
+tag
+tagId
+
+Task Tags:
+taskId
+tagId
+
+User Subscribed Tags:
+userId
+tagId
+
+Un-published tasks:
+modId
+taskId
+userId
