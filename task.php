@@ -11,17 +11,15 @@
 function checkClaimedOrUnpublished($sql)
 {
 	global $db;
-	global $owner;
 	$taskId = mysqli_real_escape_string($db,$_GET['taskId']);
 	$result = mysqli_query($db,$sql);
 	$count = mysqli_num_rows($result);
 	$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 	
-
-	if(!$owner && $count > 0 && $row['userId'] != $_SESSION['userId'])
+	if($count > 0 && $row['userId'] != $_SESSION['userId'])
 		header("location: dashboard.php");
 	
-	else if($count == 1)
+	else if($count == 1 && $row['userId'] == $_SESSION['userId'])
 		return true;
 	
 	else 
@@ -55,7 +53,8 @@ $taglist ="";
 			else {
 			
 			 $taskId = mysqli_real_escape_string($db,$_GET['taskId']);
-			
+			 $claimed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
+			 $unpublished= checkClaimedOrUnpublished("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
 			 
 			 
 			 //Get task info from the DB
@@ -69,9 +68,6 @@ $taglist ="";
 				if($userId == $_SESSION['userId'])
 					$owner = true;
 				
-				
-				$claimed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
-			    $unpublished= checkClaimedOrUnpublished("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
 				$taskTitle = $row['taskTitle'];
 				$taskDate = $row['taskDate'];
 				$taskType = $row['taskType'];
@@ -88,34 +84,6 @@ $taglist ="";
 				$result3 = mysqli_query($db, $sql3);	
 			    $row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
 				$submittedBy = $row['firstName'] . " " . $row['lastName'];
-				
-				
-				if(isset($_GET['claim']) && $_GET['claim'] == 1 && !$error && !$owner)
-				{
-					$sql = "SELECT taskId FROM task_claimed WHERE taskId = '$taskId'";
-					$result = mysqli_query($db,$sql);
-					if(mysqli_num_rows($result) == 0)
-					{
-						$sql = "INSERT INTO task_claimed(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
-						mysqli_query($db,$sql);
-						$claimed = true;	
-					}
-				}
-				
-				
-				if($claimed)
-				{
-					//Get claimer's name and ID from the DB
-					$sql = "SELECT userId from task_claimed WHERE taskId = '$taskId'";
-					$result3 = mysqli_query($db, $sql);	
-					$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
-					$claimerid = $row['userId'];
-					
-					$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$claimerid'";
-					$result3 = mysqli_query($db, $sql3);	
-					$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
-					$claimername = $row['firstName'] . " " . $row['lastName'];
-				}
 				
 				//Get file paths from the DB
 				$filesql = "SELECT * FROM file_paths WHERE taskId = '$taskId'";
@@ -145,7 +113,17 @@ $taglist ="";
 			
 		
 		
-			
+			if(isset($_GET['claim']) && $_GET['claim'] == 1 && !$error && !$claimed)
+			{
+				$sql = "SELECT taskId FROM task_claimed WHERE taskId = '$taskId'";
+				$result = mysqli_query($db,$sql);
+				if(mysqli_num_rows($result) == 0)
+				{
+					$sql = "INSERT INTO task_claimed(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
+					mysqli_query($db,$sql);
+					$claimed = true;	
+				}
+			}
 			
 			if(isset($_GET['unpublish']) && $owner && $_GET['unpublish'] == 1 && !$error && !$claimed)
 			{
@@ -172,7 +150,6 @@ $taglist ="";
 <html lang="en">
 <head>
     <meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <title>View Task - Proofreader</title>
 
@@ -210,9 +187,6 @@ $taglist ="";
                     </li>
                     <li>
                         <a href="claimedtasks.php">Claimed Tasks</a>
-                    </li>
-					<li>
-                        <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
 					   
                 </ul>
@@ -257,10 +231,10 @@ $taglist ="";
 			
 		<div class="panel panel-default">
 		  <div class="panel-heading">
-			<h3 class="panel-title"><?php if($claimed && !$owner){echo "<span class='glyphicon glyphicon-ok'></span> You have claimed this task - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> You have unpublished this task - ";} echo $taskTitle; 
+			<h3 class="panel-title"><?php if($claimed){echo "<span class='glyphicon glyphicon-ok'></span> You have claimed this task - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> You have unpublished this task - ";} echo $taskTitle; 
 			
 
-			if($owner && !$unpublished && !$claimed)
+			if($owner && !$unpublished)
 			{
 				echo "<p class='pull-right'><a href='task.php?taskId=$taskId&unpublish=1'><span class='glyphicon glyphicon-remove'></span>  Unpublish Task</a></p>";
 			}
@@ -301,11 +275,6 @@ $taglist ="";
 			  
 			  else if(!$error){
 				  echo "<li class='list-group-item list-group-item-success'>Full Document: <a href=' $fileurl'>Click here to download.</a> $samplefiletype</li>";
-			  }
-			  
-			  if($claimed)
-			  {
-				 echo "<li class='list-group-item'>Claimed By: <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
 			  }
 			  ?>
 			

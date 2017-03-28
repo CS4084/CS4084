@@ -227,9 +227,6 @@
                     <li>
                         <a href="claimedtasks.php">Claimed Tasks</a>
                     </li>
-					<li>
-                        <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
-                    </li>
 					   
                 </ul>
 

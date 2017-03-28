@@ -12,11 +12,11 @@
  
  if ($_SERVER['REQUEST_METHOD'] == 'GET'){
    
-   if(!isset($_GET['userId']))
+   if(!isset($_GET['user']))
      $error = true;
    
    else {
-	 $userId = mysqli_real_escape_string($db,$_GET['userId']);
+	 $userId = mysqli_real_escape_string($db,$_GET['user']);
 	 $sql = "SELECT firstName, lastName, studentId, repScore, dateJoined, subjectStream FROM users NATURAL JOIN subject_streams WHERE userId = '$userId'";
 	 $result = mysqli_query($db,$sql);
 	 $count = mysqli_num_rows($result);
@@ -51,7 +51,6 @@
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
     <title>My Profile - Proofreader</title>
@@ -90,9 +89,6 @@
                     </li>
                     <li>
                         <a href="claimedtasks.php">Claimed Tasks</a>
-                    </li>
-					<li>
-                        <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
 					   
                 </ul>
@@ -135,7 +131,7 @@
 					<li class="list-group-item">Subject Stream: <?php echo $row["subjectStream"];?></li>
 					<li class="list-group-item">Reputation: <?php echo $row["repScore"];?></li>
 					<li class="list-group-item">Date joined: <?php echo $row["dateJoined"];?></li>
-					<li class="list-group-item"><a href="usertasks.php?userId=<?php echo $userId;?>">View open tasks</a></li>
+					<li class="list-group-item"><a href="tasks.php?user<?php echo $userId;?>">View open tasks</a></li>
 					<li class="list-group-item">ID: <?php echo $row["studentId"];?></li>
 				</ul>
 				</div>
