@@ -2,92 +2,95 @@
 //ob_start();
 session_start();
  include('config.php');
- session_start();
  
  if ( isset($_SESSION['userId'])!="" ) {
   header("Location: dashboard.php");
   exit;
-  
+ }
+$errormsg = "";
 $error = false;
+
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
+	 $todaydate =  date("Y-m-d");
 	// clean user inputs to prevent sql injections
+	 $email = mysqli_real_escape_string($db,$_POST['email']);
+	 $email = trim($_POST['email']);
+     $pwd = mysqli_real_escape_string($db,$_POST['pwd']); 
+	 $firstname = mysqli_real_escape_string($db, $_POST['firstname']);
+	 $lastname = mysqli_real_escape_string($db, $_POST['lastname']);
+	 $id = mysqli_real_escape_string($db, $_POST['id']);
 	
-	$firstname = trim($_POST['firstname']);
-	$firstname = strip_tags($firstname);
-	$firstname = htmlspecialchars($firstname);
+	// email validation, strips the email down to the last part and matches it against the allowed emails.
 	
-	$lastname = trim($_POST['lastname']);
-	$lastname = strip_tags($lastname);
-	$lastname = htmlspecialchars($lastname);
-	
-	$email = trim($_POST['email']);
-	$email = strip_tags($email);
-	$email = htmlspecialchars($email);
-	
-	$pwd = trim($_POST['pwd']);
-	$pwd = strip_tags($pwd);
-	$pwd = htmlspecialchars($pwd);
-	
-	$id = trim($_POST['id']);
-	$id = strip_tags($id);
-	$id = htmlspecialchars($id);
-	
-	// email validation
-	if ( !filter_var($email,FILTER_VALIDATE_EMAIL) ) {
-		$error = true;
-		$emailError = "Please enter valid email address.";
-	} else {
-		//  email exist or not
-		$query = "SELECT userEmail FROM users WHERE userEmail='$email'";
-		$result = mysql_query($query);
-		$count = mysql_num_rows($result);
-		if($count!=0){
-			$error = true;
-			$emailError = "Provided Email is already in use.";
+	 $allowed=array('ul.ie', 'studentmail.ul.ie');
+	 
+	if (filter_var($email,FILTER_VALIDATE_EMAIL)) {
+		$explodedEmail = explode('@', $email);
+		$domain = array_pop($explodedEmail);
+		$sql = "SELECT email FROM users WHERE email='$email'";
+		$result = mysqli_query($db,$sql)
+		or die("Error: ".mysqli_error($db));
+		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+		$count = mysqli_num_rows($result);
+      
+		// If result matched table row must be 1 row
+		
+		if($count > 0) {
+         $error = true;
 		}
+		if ( ! in_array($domain, $allowed))
+		{
+        $error = true;
+		$errormsg .= "Please enter valid UL email address";
+		}
+	} else {
+		echo 'doot doot';
 	}
 	
 	//studentID val
 	if(empty($id)){
 		$error=true;
-		$studentIDError="Please enter youur student ID.";
+		$errormsg .="Please enter youur student ID.";
 	}
 	else if(strlen($id)!=8){
 		$error=true;
-		$studentIDError="Must be 8 characters long.";
+		$errormsg .="Student ID be 8 characters long.";
 	}
 	else if(!preg_match("/^(?:0|[1-9][0-9]*)$/",$id)){
-		$id=true;
-		$studentIDError="May only contain numbers.";
+		$error=true;
+		$errormsg .="Student ID may only contain numbers.";
 	}
 	// password validation
 	if (empty($pwd)){
 		$error = true;
-		$passError = "Please enter password.";
+		$errormsg .= "Please enter password.";
 	} else if(strlen($pwd) < 6) {
 		$error = true;
-		$passError = "Password must have atleast 6 characters.";
+		$errormsg .= "Password must have atleast 6 characters.";
 	}
 	// password encrypt using SHA256();
 	$password = hash('sha256', $pwd);
 	if( !$error ) {
-		$query = "INSERT INTO users(firstName,lastName,id,userEmail,userPass) VALUES('$firstname','$lastname','$id','$email','$pwd')";
-		$res = mysql_query($query);
-		if ($res) {
-			$errTyp = "success";
-			$errMSG = "Successfully registered, you may login now";
-			unset($firstname);
-			unset($lastname);
-			unset($id);
-			unset($email);
-			unset($pwd);
-		} else {
-			$errTyp = "danger";
-			$errMSG = "Something went wrong, try again later...";
+		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate')";
+		mysqli_query($db,$query);
+		$userId=mysqli_insert_id($db);
+		if(isset($_GET['discipline']))
+		{
+			$discipline=$_GET['discipline'];
+			$query=("INSERT INTO subject_streams(userId, subjectStream) VALUES ('$userId','$discipline')");
+			mysqli_query($db,$query);
+			if($query)
+			{
+				echo "<br>".$discipline."inserted";
+			}
+
 		}
+
+		header("location: index.php?success=1");
 	}
-}
+} 
+$errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Error: Please try again. $errormsg</div>";
 ?>
 
 <html lang="en"><head>
@@ -112,7 +115,7 @@ $error = false;
         <div class="container">
             <!-- Logo-->
             <div class="navbar-header">
-                <a class="navbar-brand" href="index.html"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
+                <a class="navbar-brand" href="index.php"><span class="glyphicon glyphicon-education"></span> Proofreaders</a>
             </div>
         </div>
         <!-- /.container -->
@@ -132,6 +135,11 @@ $error = false;
 					</h3>
 				</div>
 				<div class="panel-body">
+				<?php
+				if($error){
+					echo($errorbox);
+				}
+				?>
 					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
 						<div class="form-group">
 							<input type="text" class="form-control" id="email" name="email" placeholder="Email">
@@ -148,10 +156,11 @@ $error = false;
 						<div class="form-group">
 						<p>Select a discipline</p>
 							<select class="form-control" name="discipline" id="discipline">
-								<option value="one">Education and Health Sciences</option>
-								<option value="two">Arts and Humanities</option>
-								<option value="three">Science and Engineering</option>
-								<option value="four">Business</option>
+								<option value="">Select...</option>
+								<option value="1">Education and Health Sciences</option>
+								<option value="2">Arts and Humanities</option>
+								<option value="3">Science and Engineering</option>
+								<option value="4">Business</option>
 							</select>
 						</div>			
 						<div class="form-group">
@@ -169,5 +178,5 @@ $error = false;
 	  </div>
 
 	</div><!--/container-fluid-->
-	
-	
+	</body>
+</html>
