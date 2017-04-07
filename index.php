@@ -36,7 +36,7 @@
       $mypassword = mysqli_real_escape_string($db,$_POST['password']); 
 	  $hashpwd = hash('sha256',$mypassword);
       
-      $sql = "SELECT userId FROM users WHERE email = '$myemail' and password = '$hashpwd'";
+      $sql = "SELECT userId, repScore FROM users WHERE email = '$myemail' and password = '$hashpwd'";
       $result = mysqli_query($db,$sql);
 	  $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
       $count = mysqli_num_rows($result);
@@ -46,6 +46,7 @@
       if($count == 1) {
         
          $_SESSION['userId'] = $row["userId"];
+		 $_SESSION['repScore'] = $row["repScore"];
          header("location: dashboard.php");
       }else {
          $error = true;

@@ -31,6 +31,7 @@ function checkClaimedOrUnpublished($sql)
 $error = false;
 $owner = false;
 $pastdeadline = false;
+$claimer  = false;
 
 
 $submittedBy = "";
@@ -46,6 +47,8 @@ $wordCount = "";
 $taskClaimDeadline = "";
 $taskCompletionDeadline = "";
 $taglist ="";
+
+
 
 
  if ($_SERVER['REQUEST_METHOD'] == 'GET'){
@@ -110,6 +113,10 @@ $taglist ="";
 					$result3 = mysqli_query($db, $sql);	
 					$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
 					$claimerid = $row['userId'];
+					if($claimerid = $_SESSION['userId'])
+					{
+						$claimer = true;
+					}
 					
 					$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$claimerid'";
 					$result3 = mysqli_query($db, $sql3);	
@@ -123,8 +130,10 @@ $taglist ="";
 				$row = mysqli_fetch_array($fileresult, MYSQLI_ASSOC);
 				$fileurl = $row['filePath'];
 				$samplefileurl = $row['sampleFilePath'];
-				$taskfiletype = "<kbd class='pull-right'>" . end(explode(".",$fileurl)) . "</kbd>";
-				$samplefiletype = "<kbd class='pull-right'>" . end(explode(".",$samplefileurl)) . "</kbd>";
+				$taskfiletype = explode(".",$fileurl);
+				$samplefiletype = explode(".",$samplefileurl);
+				$taskfilehtml = "<kbd class='pull-right'>" . end($taskfiletype) . "</kbd>";
+				$samplefilehtml = "<kbd class='pull-right'>" . end($samplefiletype) . "</kbd>";
 				
 				//Get tags from the DB
 				$sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$taskId'";
@@ -163,6 +172,8 @@ $taglist ="";
 	}
 
 		else $error = true
+		
+		
 		
 			
  ?>
@@ -214,6 +225,10 @@ $taglist ="";
 					<li>
                         <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
+					<?php if($_SESSION['repScore'] >= 40) echo "<li class=>
+						<a href='flaggedtasks.php'>Flagged Tasks</a>
+					</li>"
+					?>
 					   
                 </ul>
 
@@ -283,7 +298,7 @@ $taglist ="";
 			  <li class="list-group-item">Submitted on: <?php echo $taskDate;?></li>
 			  <li class="list-group-item">Claim deadline: <?php echo $taskClaimDeadline;?></li>
 			  <li class="list-group-item">Deadline: <?php echo $taskCompletionDeadline;?></li>
-			  <li class="list-group-item">Sample: <a href="<?php echo $samplefileurl;?>">Click here to download.</a><?php echo $samplefiletype;?></li>
+			  <li class="list-group-item">Sample: <a href="<?php echo $samplefileurl;?>">Click here to download.</a><?php echo $samplefilehtml;?></li>
 			  <?php 
 			  
 			  if($pastdeadline && !$claimed && !$owner)
@@ -300,23 +315,26 @@ $taglist ="";
 			  }
 			  
 			  else if(!$error){
-				  echo "<li class='list-group-item list-group-item-success'>Full Document: <a href=' $fileurl'>Click here to download.</a> $samplefiletype</li>";
+				  echo "<li class='list-group-item list-group-item-success'>Full Document: <a href=' $fileurl'>Click here to download.</a> $taskfilehtml</li>";
 			  }
 			  
 			  if($claimed)
 			  {
 				 echo "<li class='list-group-item'>Claimed By: <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
 			  }
+			  
 			  ?>
 			
 			</ul>
 			
 			<ul class="list-group task-info">
 			<li class="list-group-item greyBG">Description</</li>
-			<li class="list-group-item"><?php echo $taskDesc;?></ul>
+			<li class="list-group-item"><?php echo $taskDesc;?>
 			
+	
+			</ul>
 			
-			
+			<?php if($claimer) echo $submitbox;?>
 			
 			</div> 
 			  

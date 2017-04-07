@@ -94,6 +94,10 @@
 					<li>
                         <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
+					<?php if($_SESSION['repScore'] >= 40) echo "<li class=>
+						<a href='flaggedtasks.php'>Flagged Tasks</a>
+					</li>"
+					?>
 					   
                 </ul>
 
@@ -125,8 +129,14 @@
 		<!-- Center Column -->
 		<div class="col-sm-6">
 			<div class="panel panel-default">
+			<form action='" . htmlspecialchars($_SERVER['PHP_SELF']) ."' method='get'>
+				<input type='hidden' name='taskId' value='" .  htmlspecialchars($_GET['taskId']) . "'>
+				<input type='hidden' name='claim' value='1'>
+				<li class='list-group-item'> <button type='submit' class='btn btn-success'>Ban User<span class='glyphicon glyphicon-ok'></span></button></li>
+				</form>
 				<div class="panel-heading">
 					<h1 class="panel-title"><span class="glyphicon glyphicon-user"></span> <?php echo $title; ?></h1>
+					
 				</div>
 				<div class="panel-body">
 				<img src="images/avatar.png" id="avatar"/>

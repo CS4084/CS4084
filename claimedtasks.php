@@ -62,6 +62,10 @@
 					<li>
                         <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
+					<?php if($_SESSION['repScore'] >= 40) echo "<li class=>
+						<a href='flaggedtasks.php'>Flagged Tasks</a>
+					</li>"
+					?>
 					   
                 </ul>
 

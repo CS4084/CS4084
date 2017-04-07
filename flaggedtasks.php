@@ -3,13 +3,14 @@
   include('displaytasks.php');
   session_start();
 
-  if ( $_SESSION['userId']=="") {
+  if ( $_SESSION['userId']=="" || $_SESSION['repScore'] < 40) {
     header("Location: index.php");
     exit;
   }
   
- 
-  $sql = "SELECT * FROM task WHERE NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId)) ORDER BY taskDate DESC";
+  
+  $userId = mysqli_real_escape_string($db, $_SESSION['userId']);
+  $sql = "SELECT * FROM task_flagged ORDER BY taskDate DESC";
   $taskhtml = displayTasks($sql);
   
  ?>
@@ -49,7 +50,7 @@
             <!-- Navbar links -->
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav">
-                    <li class="active">
+                    <li>
                         <a href="dashboard.php">Dashboard</a>
                     </li>
                     <li>
@@ -61,10 +62,10 @@
 					<li>
                         <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
-					<?php if($_SESSION['repScore'] >= 40) echo "<li class=>
-						<a href='flaggedtasks.php'>Flagged Tasks</a>
-					</li>"
-					?>
+					<li class="active">
+						<a href="flaggedtasks.php">Flagged Tasks</a>
+					</li>
+					
 					   
                 </ul>
 
@@ -86,29 +87,13 @@
 
 		<!-- Left Column -->
 		<div class="col-sm-3">
-
-			<!-- List-Group Panel -->
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-home"></span> Dashboard</h1>
-				</div>
-				<div class="list-group">
-					<a href="logout.php" class="list-group-item">Log out</a>
-					<a href="newtask.php" class="list-group-item">Create a new task</a>
-				
-				</div>
-			</div>
-
 	
 		</div><!--/Left Column-->
   
   
 		<!-- Center Column -->
 		<div class="col-sm-6">
-			
-		
 			<!-- Articles -->
-			
 			<?php echo $taskhtml;?>
 		</div><!--/Center Column-->
 

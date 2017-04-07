@@ -126,6 +126,7 @@
 	  
 	  
 	  if(!$error) {
+		  $todaydate = date("Y-m-d H:i:s");
 	        $sql = "INSERT INTO task(userId, taskTitle, taskType, taskDesc, pageCount, wordCount, taskClaimDeadline, taskCompletionDeadline, taskSubject, taskDate) VALUES('$userid', '$title', '$type', '$description', '$pagecount', '$wordcount', '$claimdeadline', '$completiondeadline', '$discipline', '$todaydate')";
 	        mysqli_query($db,$sql);
 	        $taskId = mysqli_insert_id($db);
@@ -230,6 +231,10 @@
 					<li>
                         <a href="usertasks.php?userId=<?php echo $_SESSION['userId'];?>">My Tasks</a>
                     </li>
+					<?php if($_SESSION['repScore'] >= 40) echo "<li class=>
+						<a href='flaggedtasks.php'>Flagged Tasks</a>
+					</li>"
+					?>
 					   
                 </ul>
 
