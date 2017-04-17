@@ -7,6 +7,8 @@
     exit;
 	
 	$userId = mysqli_real_escape_string($db, $_SESSION['userId']);
-	$query = "INSERT INTO tasks_flagged(taskId,userId,taskDate) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate')";
+	$taskId = mysqli_insert_id($db);
+	$date =  date("Y-m-d");
+	$query = "INSERT INTO tasks_flagged(taskId,userId,taskDate) VALUES('$taskID','$userId','$date')";
   }
 ?>
