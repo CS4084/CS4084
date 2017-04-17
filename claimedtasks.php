@@ -10,8 +10,13 @@
   
   
   $userId = mysqli_real_escape_string($db, $_SESSION['userId']);
-  $sql = "SELECT * FROM task WHERE task.taskId IN (SELECT taskId FROM task_claimed WHERE userId = '$userId') ORDER BY taskDate DESC";
+  $sql = "SELECT * FROM task WHERE task.taskId IN (SELECT taskId FROM task_claimed WHERE userId = '$userId' AND taskId NOT IN(SELECT taskId FROM task_completed)) ORDER BY taskCompletionDeadline";
   $taskhtml = displayTasks($sql);
+  if($taskhtml == "")
+	  $taskhtml = "<br><br>
+						<div class='alert alert-warning'>
+						<span class='glyphicon glyphicon-warning-sign'></span>  	There are no tasks to display.
+						</div>";
   
  ?>
   
@@ -19,10 +24,11 @@
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="/favicon.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
-    <title>Dashboard - Proofreader</title>
+    <title>Dashboard - Proofreaders</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">

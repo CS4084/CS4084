@@ -8,9 +8,80 @@
     exit;
   }
   
+  $sql = "SELECT * FROM task WHERE taskId IN (SELECT taskId FROM task_tags NATURAL JOIN user_subscribed_tags WHERE userId = '$_SESSION[userId]')
+ AND NOT EXISTS 
+(SELECT * 
+   FROM task_claimed 
+   WHERE task.taskId = task_claimed.taskId) 
+AND NOT EXISTS  (
+      SELECT * 
+      FROM unpublished_tasks 
+      WHERE task.taskId = unpublished_tasks.taskId)
+AND NOT EXISTS  (
+      SELECT * 
+      FROM task_completed
+      WHERE task.taskId = task_completed.taskId)
+ORDER BY taskClaimDeadline";
+  $taskhtml = displayTasks($sql, true);
  
-  $sql = "SELECT * FROM task WHERE NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId)) ORDER BY taskDate DESC";
-  $taskhtml = displayTasks($sql);
+  $sql = "SELECT * 
+FROM task 
+WHERE NOT EXISTS 
+(SELECT * 
+   FROM task_claimed 
+   WHERE task.taskId = task_claimed.taskId) 
+AND NOT EXISTS  (
+      SELECT * 
+      FROM unpublished_tasks 
+      WHERE task.taskId = unpublished_tasks.taskId)
+AND NOT EXISTS  (
+      SELECT * 
+      FROM task_completed
+      WHERE task.taskId = task_completed.taskId)
+AND NOT EXISTS (
+     SELECT *
+     FROM task_tags 
+     NATURAL JOIN user_subscribed_tags 
+     WHERE userId = '$_SESSION[userId]'
+	 AND task.taskId = task_tags.taskId ) 
+ORDER BY taskClaimDeadline";
+	 
+	 
+  $taskhtml .= displayTasks($sql, true);
+  
+    if($taskhtml == "")
+	  $taskhtml = "<br><br>
+						<div class='alert alert-warning'>
+						<span class='glyphicon glyphicon-warning-sign'></span>  	There are no tasks to display.
+						</div>";
+  
+  
+  $errorBox = "";	  
+  if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['error']))
+  {
+	$errorBox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  No such tag exists.</div>";
+  }
+  
+  
+  
+  
+  $subscribedTags = "";
+  
+  $sql = "SELECT * FROM user_subscribed_tags NATURAL JOIN tags WHERE userId = $_SESSION[userId]";
+  $result = mysqli_query($db, $sql);
+  
+  if($result)
+  {
+	  while($row = mysqli_fetch_array($result, MYSQLI_ASSOC))
+	  {
+		$subscribedTags .= "<a title='Unsubscribe from this tag' href='tag.php?tagId=$row[tagId]&unsub=1'><span class='label label-default remove-tag'>$row[tag]</span></a>  ";
+	  }
+  }
+  
+  $subscribedTags = $subscribedTags == "" ? "You have not subscribed to any tags." : $subscribedTags;
+  
+ 
+  
   
  ?>
   
@@ -20,19 +91,33 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
-
-    <title>Dashboard - Proofreader</title>
+	<link rel="icon" type="image/png" href="/favicon.png">
+    <title>Dashboard - Proofreaders</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS: You can use this stylesheet to override any Bootstrap styles and/or apply your own styles -->
     <link href="css/custom.css" rel="stylesheet">
+	
+	<!-- For the tag auto completion -->
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+	
+	
 
 </head>
 
 <body>
-
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+	$(function() {
+		$( "#tags" ).autocomplete({
+			source: 'tagsearch.php'
+			});
+		
+		});
+</script>
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
         <div class="container">
@@ -98,6 +183,30 @@
 				
 				</div>
 			</div>
+			
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h1 class="panel-title"><span class="glyphicon glyphicon-tags"></span> Tags</h1>
+				</div>
+				<div class="list-group">
+					<div class="list-group-item">
+					<?php echo $errorBox;?>
+						<p>Subscribe to a tag:</p>
+						<form action="tag.php" method="get">
+						<div class="ui-widget">
+							<input id="tags" name="tag"></input><button type="submit" class="btn-success" id="tagbtn"><span class="glyphicon glyphicon-ok"></span></button>
+						</div>
+						
+						</form>
+							
+					</div>
+					<p class="list-group-item">
+					<strong>My Tags:</strong><br><br>
+					<?php echo $subscribedTags?></p>
+				
+				</div>
+			</div>
+
 
 	
 		</div><!--/Left Column-->
@@ -125,10 +234,7 @@
         	</div>
         </div>
 	</footer>
-
-	
-    <!-- jQuery -->
-    <script src="js/jquery-1.11.3.min.js"></script>
+    
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>

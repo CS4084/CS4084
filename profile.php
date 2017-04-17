@@ -6,17 +6,13 @@
     header("Location: index.php");
     exit;
   }
- 
- $error = false;
- 
- 
- if ($_SERVER['REQUEST_METHOD'] == 'GET'){
    
-   if(!isset($_GET['userId']))
-     $error = true;
-   
-   else {
+   if($_SERVER['REQUEST_METHOD'] !== 'GET' OR !isset($_GET['userId']) OR empty($_GET['userId']))
+     $userId = $_SESSION['userId'];
+   else
 	 $userId = mysqli_real_escape_string($db,$_GET['userId']);
+   
+	
 	 $sql = "SELECT firstName, lastName, studentId, repScore, dateJoined, subjectStream FROM users NATURAL JOIN subject_streams WHERE userId = '$userId'";
 	 $result = mysqli_query($db,$sql);
 	 $count = mysqli_num_rows($result);
@@ -24,37 +20,24 @@
 	 if($count == 1)
 	 {
 		$row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-        $title = "Profile - " . $row['firstName'] . " " . $row['lastName'];	
+        $title = ($userId == $_SESSION['userId']) ? "My Profile" : "Profile - " . $row['firstName'] . " " . $row['lastName'];	
 	 }
-	   
 	 else
-	   $error = true;
-   
-   }
- }
- else
-   $error = true;
+		 header("location: dashboard.php");
  
- //If the user in the GET parameter doesn't exist, or if no GET parameter is provided,
- //display the logged in user's profile info.
- if($error) {
-   $userId = $_SESSION['userId'];
-   $sql = "SELECT firstName, lastName, studentId, repScore, dateJoined, subjectStream FROM users NATURAL JOIN subject_streams WHERE userId = '$userId'";
-
-   $result = mysqli_query($db,$sql);
-   $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-   $title  = "My Profile";
- }
+   
+ 
 ?>
 
 <!DOCTYPE html>
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="/favicon.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
 
-    <title>My Profile - Proofreader</title>
+    <title><?php echo $title ?> - Proofreaders</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -85,7 +68,7 @@
                     <li>
                         <a href="dashboard.php">Dashboard</a>
                     </li>
-                    <li <?php if($error) echo "class='active'";?>>
+                    <li <?php if($userId == $_SESSION['userId']) echo "class='active'";?>>
                         <a href="profile.php">My Profile</a>
                     </li>
                     <li>

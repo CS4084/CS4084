@@ -27,7 +27,7 @@
 	  
 	  if(isset($_GET['type']) && $_GET['type'] == "claimed" && $mytasks)
 	  {
-		$sql = "SELECT * FROM task_claimed JOIN task on task_claimed.taskId = task.taskId WHERE task.taskId IN (SELECT taskId FROM task WHERE userId = '$userId')";
+		$sql = "SELECT * FROM task_claimed JOIN task on task_claimed.taskId = task.taskId WHERE task.taskId IN (SELECT taskId FROM task WHERE userId = '$userId' AND taskId NOT IN (SELECT taskId FROM task_completed)";
 	  }
 	  else if(isset($_GET['type']) && $_GET['type'] == "completed" && $mytasks)
 	  {
@@ -39,6 +39,11 @@
 	  }
 		
 	  $taskhtml = displayTasks($sql);
+	  if($taskhtml == "")
+	  $taskhtml = "<br><br>
+						<div class='alert alert-warning'>
+						<span class='glyphicon glyphicon-warning-sign'></span>  	There are no tasks to display.
+						</div>";
 	
   }
   
@@ -53,8 +58,9 @@
 <head>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <meta charset="utf-8">
+	<link rel="icon" type="image/png" href="/favicon.png">
 
-    <title><?php echo $userName . "'s Tasks";?> - Proofreader</title>
+    <title><?php echo $userName . "'s Tasks";?> - Proofreaders</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
@@ -133,7 +139,7 @@
 			{
 			 $tasknav = "<ul class='nav nav-tabs'>
 							<li role='presentation'";
-			  if((isset($_GET['type']) && $_GET['type'] == "open") || !isset($_GET['type']))
+			if( !isset($_GET['type']) || (isset($_GET['type']) && ($_GET['type'] !== "claimed" && $_GET['type'] !== "completed" && $_GET['type'] !== "unpublished")))
 					$tasknav .= "class='active'";
 			  
 			  $tasknav .= "><a href='usertasks.php?userId=$userId&type=open'>Open Tasks</a></li>

@@ -28,150 +28,150 @@ function checkClaimedOrUnpublished($sql)
 		return false;
 }
  
-$error = false;
+
 $owner = false;
 $pastdeadline = false;
 $claimer  = false;
-
-
-$submittedBy = "";
-$taskId = "";
-$userId = "";
-$taskTitle = "";
-$taskDate = "";
-$taskType = "";
-$taskDesc = "";
-$taskSubject = "";
-$pageCount = "";
-$wordCount = "";
-$taskClaimDeadline = "";
-$taskCompletionDeadline = "";
 $taglist ="";
 
 
+ if (isset($_GET['taskId']) && !empty($_GET['taskId'])){
+	 $taskId = mysqli_real_escape_string($db,$_GET['taskId']);
 
-
- if ($_SERVER['REQUEST_METHOD'] == 'GET'){
-	 if(!isset($_GET['taskId']))
-			$error = true;
- 
-			else {
-			
-			 $taskId = mysqli_real_escape_string($db,$_GET['taskId']);
-			
-			 
-			 
-			 //Get task info from the DB
-			 $sql = "SELECT * FROM task WHERE taskId = '$taskId'";
-			 $result = mysqli_query($db,$sql);
-			 $count = mysqli_num_rows($result);
-			 $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-			 
-			 if($count == 1){
-				$userId = $row['userId'];
-				if($userId == $_SESSION['userId'])
-					$owner = true;
-				
-				
-				$claimed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
-			    $unpublished= checkClaimedOrUnpublished("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
-				$taskTitle = $row['taskTitle'];
-				$taskDate = $row['taskDate'];
-				$taskType = $row['taskType'];
-				$taskDesc = $row['taskDesc'];
-				$taskSubject = $row['taskSubject'];
-				$pageCount = $row['pageCount'];
-				$wordCount = $row['wordCount'];
-				$taskClaimDeadline = $row['taskClaimDeadline'];
-				$taskCompletionDeadline = $row['taskCompletionDeadline'];
-				
-				
-				//Get user's name from the DB
-				$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$userId'";
-				$result3 = mysqli_query($db, $sql3);	
-			    $row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
-				$submittedBy = $row['firstName'] . " " . $row['lastName'];
-				
-				
-				if(isset($_GET['claim']) && $_GET['claim'] == 1 && !$error && !$owner)
-				{
-					$sql = "SELECT taskId FROM task_claimed WHERE taskId = '$taskId'";
-					$result = mysqli_query($db,$sql);
-					if(mysqli_num_rows($result) == 0)
-					{
-						$sql = "INSERT INTO task_claimed(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
-						mysqli_query($db,$sql);
-						$claimed = true;	
-					}
-				}
-				
-				
-				if($claimed)
-				{
-					//Get claimer's name and ID from the DB
-					$sql = "SELECT userId from task_claimed WHERE taskId = '$taskId'";
-					$result3 = mysqli_query($db, $sql);	
-					$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
-					$claimerid = $row['userId'];
-					if($claimerid = $_SESSION['userId'])
-					{
-						$claimer = true;
-					}
-					
-					$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$claimerid'";
-					$result3 = mysqli_query($db, $sql3);	
-					$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
-					$claimername = $row['firstName'] . " " . $row['lastName'];
-				}
-				
-				//Get file paths from the DB
-				$filesql = "SELECT * FROM file_paths WHERE taskId = '$taskId'";
-				$fileresult =  mysqli_query($db,$filesql);
-				$row = mysqli_fetch_array($fileresult, MYSQLI_ASSOC);
-				$fileurl = $row['filePath'];
-				$samplefileurl = $row['sampleFilePath'];
-				$taskfiletype = explode(".",$fileurl);
-				$samplefiletype = explode(".",$samplefileurl);
-				$taskfilehtml = "<kbd class='pull-right'>" . end($taskfiletype) . "</kbd>";
-				$samplefilehtml = "<kbd class='pull-right'>" . end($samplefiletype) . "</kbd>";
-				
-				//Get tags from the DB
-				$sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$taskId'";
-				$result2 = mysqli_query($db,$sql2);
-				 while($row = mysqli_fetch_array($result2, MYSQLI_ASSOC))
-				{
-				   $taglist .= "<span class='label label-default'>$row[tag]</span>  ";
-				}
-				
-				//Check if the task is past its claim deadline
-				$todaydate = date("Y-m-d");
-				if($todaydate > $taskClaimDeadline)
-					$pastdeadline = true;
-			 }
-			 
-			 else
-				 $error = true;
-			
+	 //Get task info from the DB
+	 $sql = "SELECT * FROM task WHERE taskId = '$taskId'";
+	 $result = mysqli_query($db,$sql);
+	 $count = mysqli_num_rows($result);
+	 $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
+	 
+	 if($count == 1){
+		 
+		
+		 
+		$userId = $row['userId'];
+		if($userId == $_SESSION['userId'])
+			$owner = true;
 		
 		
-			
-			
-			if(isset($_GET['unpublish']) && $owner && $_GET['unpublish'] == 1 && !$error && !$claimed)
+		$claimed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
+		$unpublished= checkClaimedOrUnpublished("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
+		$completed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_completed WHERE taskId = '$taskId'");
+		$taskTitle = $row['taskTitle'];
+		$taskDate = date_format(date_create($row['taskDate']), "Y-m-d");
+		$taskType = $row['taskType'];
+		$taskDesc = $row['taskDesc'];
+		$taskSubject = $row['taskSubject'];
+		$pageCount = $row['pageCount'];
+		$wordCount = $row['wordCount'];
+		$taskClaimDeadline = $row['taskClaimDeadline'];
+		$taskCompletionDeadline = $row['taskCompletionDeadline'];
+		
+		
+		//Get user's name from the DB
+		$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$userId'";
+		$result3 = mysqli_query($db, $sql3);	
+		$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
+		$submittedBy = $row['firstName'] . " " . $row['lastName'];
+		
+		//Check if the task is past its claim deadline
+		$todaydate = date("Y-m-d");
+		if($todaydate > $taskClaimDeadline)
+			$pastdeadline = true;
+		
+		
+		if(isset($_GET['claim']) && $_GET['claim'] == 1 && !$owner && !$pastdeadline)
+		{
+			$sql = "SELECT taskId FROM task_claimed WHERE taskId = '$taskId'";
+			$result = mysqli_query($db,$sql);
+			if(mysqli_num_rows($result) == 0)
 			{
-				$sql = "SELECT taskId FROM unpublished_tasks WHERE taskId = '$taskId'";
-				$result = mysqli_query($db,$sql);
-				if(mysqli_num_rows($result) == 0)
-				{
-					$sql = "INSERT INTO unpublished_tasks(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
-					mysqli_query($db,$sql);
-					$unpublished = true;
-				}
+				$sql = "INSERT INTO task_claimed(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
+				mysqli_query($db,$sql);
+				$claimed = true;	
+				$sql = "UPDATE users SET repScore = repScore + 10 WHERE userId = '$_SESSION[userId]'";
+				mysqli_query($db,$sql);
+				$_SESSION['repScore'] = $_SESSION['repScore'] + 10;
 			}
+		}
 		
+		
+		if($claimed)
+		{
+			//Get claimer's name and ID from the DB
+			$sql = "SELECT userId from task_claimed WHERE taskId = '$taskId'";
+			$result3 = mysqli_query($db, $sql);	
+			$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
+			$claimerid = $row['userId'];
+			if($claimerid == $_SESSION['userId'])
+			{
+				$claimer = true;
+			}
+			
+			$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$claimerid'";
+			$result3 = mysqli_query($db, $sql3);	
+			$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
+			$claimername = $row['firstName'] . " " . $row['lastName'];
+		}
+		
+		//Get file paths from the DB
+		$filesql = "SELECT * FROM file_paths WHERE taskId = '$taskId'";
+		$fileresult =  mysqli_query($db,$filesql);
+		$row = mysqli_fetch_array($fileresult, MYSQLI_ASSOC);
+		$fileurl = $row['filePath'];
+		$samplefileurl = $row['sampleFilePath'];
+		$taskfiletype = explode(".",$fileurl);
+		$samplefiletype = explode(".",$samplefileurl);
+		$taskfilehtml = "<kbd>" . end($taskfiletype) . "</kbd>";
+		$samplefilehtml = "<kbd>" . end($samplefiletype) . "</kbd>";
+		
+		//Get tags from the DB
+		$sql2 = "SELECT * FROM tags NATURAL JOIN task_tags WHERE taskId = '$taskId'";
+		$result2 = mysqli_query($db,$sql2);
+		 while($row = mysqli_fetch_array($result2, MYSQLI_ASSOC))
+		{
+		   if(!$claimed && !$unpublished && !$completed)
+		   {
+			   $sql = "SELECT * FROM user_favourite_tags WHERE  userId = '$_SESSION[userId]' AND tagId = '$row[tagId]'";
+			   $result = mysqli_query($db, $sql);
+			   
+			   if(mysqli_num_rows($result) < 1)
+					$sql = "INSERT INTO user_favourite_tags (userId,tagId,viewCount) VALUES('$_SESSION[userId]','$row[tagId]','1')";
+				else
+					$sql = "UPDATE user_favourite_tags SET viewCount = viewCount + 1 WHERE userId = '$_SESSION[userId]' AND tagId = '$row[tagId]'";
+			   
+			   mysqli_query($db, $sql); 
+		   }
+		   
+		   $taglist .= "<a  title='Subscribe to this tag' href='tag.php?tag=$row[tag]'><span class='label label-default add-tag' >$row[tag]</span></a>  ";
+		}
+		
+	 }
+	 
+	 else
+		 header('location: dashboard.php');
+
+
+
+
+
+	if(isset($_GET['unpublish']) && $owner && $_GET['unpublish'] == 1 && !$claimed)
+	{
+		$sql = "SELECT taskId FROM unpublished_tasks WHERE taskId = '$taskId'";
+		$result = mysqli_query($db,$sql);
+		if(mysqli_num_rows($result) == 0)
+		{
+			$sql = "INSERT INTO unpublished_tasks(taskId, userId) VALUES('$taskId', '$_SESSION[userId]')";
+			mysqli_query($db,$sql);
+			$unpublished = true;
 		}
 	}
 
-		else $error = true
+	}
+
+	else 
+		header("location: dashboard.php");
+	
+		
 		
 		
 		
@@ -182,16 +182,19 @@ $taglist ="";
 <!-- Template by Quackit.com -->
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="/favicon.png">
     <meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <title>View Task - Proofreader</title>
+    <title>View Task - Proofreaders</title>
 
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom CSS: You can use this stylesheet to override any Bootstrap styles and/or apply your own styles -->
     <link href="css/custom.css" rel="stylesheet">
+	
+
 
 </head>
 
@@ -272,10 +275,10 @@ $taglist ="";
 			
 		<div class="panel panel-default">
 		  <div class="panel-heading">
-			<h3 class="panel-title"><?php if($claimed && !$owner){echo "<span class='glyphicon glyphicon-ok'></span> You have claimed this task - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> You have unpublished this task - ";} echo $taskTitle; 
+			<h3 class="panel-title"><?php if($claimed && !$owner && !$completed){echo "<span class='glyphicon glyphicon-ok'></span> You have claimed this task - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> You have unpublished this task - ";} else if($completed){echo "This task has been completed - ";} echo $taskTitle; 
 			
 
-			if($owner && !$unpublished && !$claimed)
+			if($owner && !$unpublished && !$claimed && !$completed)
 			{
 				echo "<p class='pull-right'><a href='task.php?taskId=$taskId&unpublish=1'><span class='glyphicon glyphicon-remove'></span>  Unpublish Task</a></p>";
 			}
@@ -290,22 +293,22 @@ $taglist ="";
 			
 			
 			<ul class="list-group task-info">
-			  <li class="list-group-item">Submitted by: <?php echo $submittedBy;?></li>
-			  <li class="list-group-item">Number of pages: <?php echo $pageCount;?></li>
-			  <li class="list-group-item">Number of words: <?php echo $wordCount;?></li>
-			  <li class="list-group-item">Type: <?php echo $taskType;?></li>
-			  <li class="list-group-item">Tags: <p class="pull-right"><?php echo $taglist;?></p></li>
-			  <li class="list-group-item">Submitted on: <?php echo $taskDate;?></li>
-			  <li class="list-group-item">Claim deadline: <?php echo $taskClaimDeadline;?></li>
-			  <li class="list-group-item">Deadline: <?php echo $taskCompletionDeadline;?></li>
-			  <li class="list-group-item">Sample: <a href="<?php echo $samplefileurl;?>">Click here to download.</a><?php echo $samplefilehtml;?></li>
+			  <li class="list-group-item"><strong>Submitted by:</strong> <a href="profile.php?userId=<?php echo $userId;?>"> <?php echo $submittedBy;?></a></li>
+			  <li class="list-group-item"><strong>Number of pages:</strong> <?php echo $pageCount;?></li>
+			  <li class="list-group-item"><strong>Number of words:</strong> <?php echo $wordCount;?></li>
+			  <li class="list-group-item"><strong>Type:</strong> <?php echo $taskType;?></li>
+			  <li class="list-group-item"><strong>Tags:</strong> <?php echo $taglist;?></li>
+			  <li class="list-group-item"><strong>Submitted on:</strong> <?php echo $taskDate;?></li>
+			  <li class="list-group-item"><strong>Claim deadline:</strong> <?php echo $taskClaimDeadline;?></li>
+			  <li class="list-group-item"><strong>Deadline:</strong> <?php echo $taskCompletionDeadline;?></li>
+			  <li class="list-group-item"><strong>Sample:</strong> <a href="<?php echo $samplefileurl;?>">Click here to download.</a><?php echo $samplefilehtml;?></li>
 			  <?php 
 			  
 			  if($pastdeadline && !$claimed && !$owner)
 			  {
 			    echo "<li class='list-group-item list-group-item-warning'>This task has passed its deadline to be claimed.</li>";
 			  }
-			  else if(!$claimed && !$owner && !$error)
+			  else if(!$claimed && !$owner)
 			  {
 				echo "<form action='" . htmlspecialchars($_SERVER['PHP_SELF']) ."' method='get'>
 				<input type='hidden' name='taskId' value='" .  htmlspecialchars($_GET['taskId']) . "'>
@@ -314,13 +317,13 @@ $taglist ="";
 				</form>";  
 			  }
 			  
-			  else if(!$error){
-				  echo "<li class='list-group-item list-group-item-success'>Full Document: <a href=' $fileurl'>Click here to download.</a> $taskfilehtml</li>";
-			  }
+			  else
+				  echo "<li class='list-group-item'><strong>Full Document:</strong> <a href=' $fileurl'>Click here to download.</a> $taskfilehtml</li>";
+			  
 			  
 			  if($claimed)
 			  {
-				 echo "<li class='list-group-item'>Claimed By: <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
+				 echo "<li class='list-group-item'><strong>Claimed By:</strong> <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
 			  }
 			  
 			  ?>
@@ -334,7 +337,16 @@ $taglist ="";
 	
 			</ul>
 			
-			<?php if($claimer) echo $submitbox;?>
+			<?php if($claimer && !$completed) echo "<ul class='list-group task-info'>
+			<li class='list-group-item greyBG'>Submit your review of this task
+			</li>
+			<li class='list-group-item'>
+			<form action='completetask.php' method='post'>
+			<textarea rows='4' class='submit' name='taskreview'></textarea>
+			<input type='hidden' value='$taskId' name='taskId' />
+			<button class='btn btn-success' type='submit'>Complete Task</button>
+			</form>
+			</li></ul>";?>
 			
 			</div> 
 			  
