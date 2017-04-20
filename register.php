@@ -84,8 +84,9 @@ $error = false;
 	}
 	// password encrypt using SHA256();
 	$password = hash('sha256', $pwd);
+	$hash = md5( rand(0,1000) ); // Generate random 32 character hash and assign it to a local variable. for email to user
 	if( !$error ) {
-		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate')";
+		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined,hash) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate','$hash')";
 		mysqli_query($db,$query);
 		$userId=mysqli_insert_id($db);
 		
@@ -95,8 +96,25 @@ $error = false;
 		{
 			echo "<br>".$discipline."inserted";
 		}
-
 		
+		$to      = $email; // Send email to our user
+		$subject = 'Signup | Verification'; // Give the email a subject 
+		$message = '
+		 
+		Thanks for signing up!
+		Your account has been created, you can login with the following credentials after you have activated your account by pressing the url below.
+		 
+		------------------------
+		Username: '.$name.'
+		Password: '.$pwd.'
+		------------------------
+		 
+		Please click this link to activate your account:
+		http://testweb3.csisad.ul.campus/modules/cs4014/group20/verify.php'.$email.'&hash='.$hash.'
+		 '; // Our message above including the link
+							 
+		$headers = 'From:noreply@proofreaders.com' . "\r\n"; // Set from headers
+		mail($to, $subject, $message, $headers); // Send our email
 
 		header("location: index.php?success=1");
 	}
