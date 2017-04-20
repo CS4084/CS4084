@@ -89,7 +89,7 @@ $error = false;
 		mysqli_query($db,$query);
 		$userId=mysqli_insert_id($db);
 		
-		$query=("INSERT INTO subject_streams(userId, subjectStream) VALUES ('$userId','$discipline')");
+		$query= "INSERT INTO subject_streams(userId, subjectStream) VALUES ('$userId','$discipline')";
 		mysqli_query($db,$query);
 		if($query)
 		{
