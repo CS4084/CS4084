@@ -1,17 +1,81 @@
 <?php 
-  include('config.php');
-  include('displaytasks.php');
-  session_start();
+include('config.php');
+include('displaytasks.php');
+session_start();
 
-  if ( $_SESSION['userId']=="") {
-    header("Location: index.php");
-    exit;
+if ( $_SESSION['userId']=="") {
+header("Location: index.php");
+exit;
+}
+
+
+$userId = mysqli_real_escape_string($db, $_SESSION['userId']);
+$sql = "SELECT * FROM task WHERE task.taskId IN (SELECT taskId FROM task_claimed WHERE userId = '$userId' AND taskId NOT IN(SELECT taskId FROM task_completed) AND taskId NOT IN(SELECT taskId FROM unpublished_tasks)) ORDER BY taskCompletionDeadline";
+$taskhtml = "";
+$userName = "";
+$result = mysqli_query($db,$sql);
+$previousTaskID = -1;
+if($result)//if there are results
+{
+	while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) 
+	{
+		$continue = true;
+		
+		
+		$todayDate = date("Y-m-d");
+		$completionDeadline = date_format(date_create($row['taskCompletionDeadline']),"Y-m-d");
+		if($completionDeadline < $todayDate)
+		{
+			$removesql = "INSERT INTO unpublished_tasks (taskId,userId) VALUES('$row[taskId]','$row[userId]')";
+			mysqli_query($db,$removesql);
+			$repsql = "UPDATE users SET repScore = repScore - '30' WHERE userId = '$userId'";
+			mysqli_query($db,$repsql);
+			$_SESSION['repScore'] = $_SESSION['repScore'] - 30;
+			$continue = false;
+		}
+
+		$previousTaskID = $row['taskId'];
+		$taglist = "";
+		
+		//Get the tags from the DB
+		$sql2 = "SELECT tag FROM tags NATURAL JOIN task_tags WHERE taskId = '$row[taskId]'";
+		$result2 = mysqli_query($db,$sql2);
+		
+		while($row1 = mysqli_fetch_array($result2, MYSQLI_ASSOC))
+			$taglist .= "<a title='Subscribe to this tag' href='tag.php?tag=$row1[tag]'><span class='label label-default add-tag'>$row1[tag]</span></a>  ";
+		
+		//Get the user's name
+		$sql3 = "SELECT firstName, lastName FROM users WHERE userId = $row[userId]";
+		$result3 = mysqli_query($db,$sql3);
+		$row3 = mysqli_fetch_array($result3, MYSQLI_ASSOC);
+		$userName = $row3['firstName'] . " " . $row3['lastName'];
+		
+		$date = date_format(date_create($row['taskDate']), "Y-m-d");
+		if(strlen($row['taskDesc']) > 250)
+			$taskDescription = substr($row['taskDesc'],0,250) . "...";
+		else 
+			$taskDescription = $row['taskDesc'];
+		
+	
+		
+		//Create the HTML element	
+		$taskhtml .= "<div class='row'>
+					<article class='col-xs-12'>
+						<h2>$row[taskTitle]</h2>
+						<p>$taskDescription</p>
+						<p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p>
+						<p class='pull-right'>$taglist</p>
+						<ul class='list-inline'>
+							<li>Submitted on $date</a></li>
+							<li><a href ='flag.php?taskId=$row[taskId]'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
+							<li>Submitted by: <a href='profile.php?userId=$row[userId]'>$userName</a></li>
+						</ul>
+					</article>
+				</div>
+	  <hr>";
+	
   }
-  
-  
-  $userId = mysqli_real_escape_string($db, $_SESSION['userId']);
-  $sql = "SELECT * FROM task WHERE task.taskId IN (SELECT taskId FROM task_claimed WHERE userId = '$userId' AND taskId NOT IN(SELECT taskId FROM task_completed)) ORDER BY taskCompletionDeadline";
-  $taskhtml = displayTasks($sql);
+}
   if($taskhtml == "")
 	  $taskhtml = "<br><br>
 						<div class='alert alert-warning'>

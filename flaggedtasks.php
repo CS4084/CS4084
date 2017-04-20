@@ -10,8 +10,11 @@
   
   
   $userId = mysqli_real_escape_string($db, $_SESSION['userId']);
-  $sql = "SELECT * FROM task_flagged ORDER BY taskDate DESC";
+  $sql = "SELECT * FROM task WHERE taskId IN(SELECT taskId FROM task_flagged) AND taskId NOT IN (SELECT taskId FROM unpublished_tasks) AND taskId NOT IN (SELECT taskId FROM task_completed) ORDER BY taskDate DESC";
   $taskhtml = displayTasks($sql);
+  $taskhtml = str_replace("flag.php", "unflag.php", $taskhtml);
+  $taskhtml = str_replace("Flag as inappropriate", "Unflag This Task", $taskhtml);
+  
   if($taskhtml == "")
 	  $taskhtml = "<br><br>
 						<div class='alert alert-warning'>

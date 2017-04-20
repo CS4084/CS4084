@@ -8,6 +8,7 @@
     exit;
   }
   
+  
   //all tasks
    $sql = "SELECT * 
 	FROM task 

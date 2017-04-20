@@ -132,17 +132,19 @@ $(function() {
 		<!-- Center Column -->
 		<div class="col-sm-6">
 			<div class="panel panel-default">
-			<form action='" . htmlspecialchars($_SERVER['PHP_SELF']) ."' method='get'>
-				<input type='hidden' name='taskId' value='" .  htmlspecialchars($_GET['taskId']) . "'>
-				<input type='hidden' name='claim' value='1'>
-				<li class='list-group-item'> <button type='submit' class='btn btn-success'>Ban User<span class='glyphicon glyphicon-ok'></span></button></li>
-				</form>
+			
 				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-user"></span> <?php echo $title; ?></h1>
+					<h1 class="panel-title"><span class="glyphicon glyphicon-user"></span> <?php echo $title; ?></h1><?php if($_SESSION['repScore'] >= 40 && isset($_GET['userId'])) echo
+			"<br><form action='ban.php' method='post'>
+				<input type='hidden' name='userId' value='" .  htmlspecialchars($_GET['userId']) . "'>
+				<button type='submit' class='btn btn-danger'>Ban User  <span class='glyphicon glyphicon-remove'></span></button>
+				</form>"
+			?>
+			
+			
 					
 				</div>
 				<div class="panel-body">
-				<img src="images/avatar.png" id="avatar"/>
 				<ul class="list-group">
 					<li class="list-group-item">Name: <?php echo $row["firstName"] . " " . $row["lastName"]; ?></li>
 					<li class="list-group-item">Subject Stream: <?php echo $row["subjectStream"];?></li>

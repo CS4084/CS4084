@@ -8,7 +8,7 @@
   }
   
 //Check if the task is claimed or unpublished and belongs to this user  
-function checkClaimedOrUnpublished($sql)
+function checkInTable($sql)
 {
 	global $db;
 	global $owner;
@@ -18,10 +18,7 @@ function checkClaimedOrUnpublished($sql)
 	$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 	
 
-	if(!$owner && $count > 0 && $row['userId'] != $_SESSION['userId'])
-		header("location: dashboard.php");
-	
-	else if($count == 1)
+	 if($count == 1)
 		return true;
 	
 	else 
@@ -53,9 +50,10 @@ $taglist ="";
 			$owner = true;
 		
 		
-		$claimed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
-		$unpublished= checkClaimedOrUnpublished("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
-		$completed = checkClaimedOrUnpublished("SELECT taskId, userId FROM task_completed WHERE taskId = '$taskId'");
+		$claimed = checkInTable("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
+		$unpublished= checkInTable("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
+		$completed = checkInTable("SELECT taskId, userId FROM task_completed WHERE taskId = '$taskId'");
+		$flagged = checkInTable("SELECT taskId, userId FROM task_flagged WHERE taskId = '$taskId'");
 		$taskTitle = $row['taskTitle'];
 		$taskDate = date_format(date_create($row['taskDate']), "Y-m-d");
 		$taskType = $row['taskType'];
@@ -148,13 +146,13 @@ $taglist ="";
 	 }
 	 
 	 else
-		 header('location: dashboard.php');
+		 header('location: dashboard.php?1');
 
 
 
 
 
-	if(isset($_GET['unpublish']) && $owner && $_GET['unpublish'] == 1 && !$claimed)
+	if(isset($_GET['unpublish']) && ($owner || ($_SESSION['repScore'] >= 40 && $flagged)) && $_GET['unpublish'] == 1 && !$claimed)
 	{
 		$sql = "SELECT taskId FROM unpublished_tasks WHERE taskId = '$taskId'";
 		$result = mysqli_query($db,$sql);
@@ -169,7 +167,7 @@ $taglist ="";
 	}
 
 	else 
-		header("location: dashboard.php");
+		header("location: dashboard.php?2");
 	
 		
 		
@@ -296,10 +294,10 @@ $(function() {
 			
 		<div class="panel panel-default">
 		  <div class="panel-heading">
-			<h3 class="panel-title"><?php if($claimed && !$owner && !$completed){echo "<span class='glyphicon glyphicon-ok'></span> You have claimed this task - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> You have unpublished this task - ";} else if($completed){echo "This task has been completed - ";} echo $taskTitle; 
+			<h3 class="panel-title"><?php if($claimed && !$completed){echo "<span class='glyphicon glyphicon-ok'></span> This task has been claimed - ";} else if($unpublished){echo "<span class='glyphicon glyphicon-remove'></span> This task has been unpublished - ";} else if($completed){echo "This task has been completed - ";} echo $taskTitle; 
 			
 
-			if($owner && !$unpublished && !$claimed && !$completed)
+			if(($owner || ($_SESSION['repScore'] >= 40 && $flagged)) && !$unpublished && !$completed)
 			{
 				echo "<p class='pull-right'><a href='task.php?taskId=$taskId&unpublish=1'><span class='glyphicon glyphicon-remove'></span>  Unpublish Task</a></p>";
 			}

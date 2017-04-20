@@ -23,7 +23,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['taskId']) && !empty($_P
 			$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
 			if($row['userId'] == $_SESSION['userId'])
 			{
-				$sql = "INSERT INTO task_completed VALUES('$taskId','$_SESSION[userId]','$review')";
+				$sql = "INSERT INTO task_completed(taskID,userId,review) VALUES('$taskId','$_SESSION[userId]','$review')";
 				mysqli_query($db, $sql);
 			}
 			
