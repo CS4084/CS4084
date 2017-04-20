@@ -1,12 +1,12 @@
 <?php
-//Create the HTML to display tasks. If remove is set to true, the task will be unpublished 
+//Create the HTML to display tasks. If remove is set to true, the task will be unpublished if past the claim deadline
 function displayTasks($sql, $remove = false)
 {
 	global $db;
 	$taskhtml = "";
 	$userName = "";
 	$result = mysqli_query($db,$sql);
-	
+	$previousTaskID = -1;
 	if($result)//if there are results
 	{
 		while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)) 
@@ -26,8 +26,9 @@ function displayTasks($sql, $remove = false)
 				}
 			}
 			
-			if($continue)
+			if($continue && $previousTaskID !== $row['taskId'])
 			{
+				$previousTaskID = $row['taskId'];
 				$taglist = "";
 				
 				//Get the tags from the DB

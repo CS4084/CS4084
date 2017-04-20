@@ -82,6 +82,10 @@ textarea.submit {
 	width: 100%;
 }
 
+.navbar-static-top{
+    z-index:99; 
+}
+
 @media screen and (max-width: 767px) {
 	.task-info {
 		margin-left: 0px;

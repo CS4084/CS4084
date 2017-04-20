@@ -196,9 +196,28 @@ $taglist ="";
 	
 
 
+	<!-- For the tag auto completion -->
+	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+	
+	
+	
+
 </head>
 
 <body>
+<script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script>
+$(function() {
+		$( "#search" ).autocomplete({
+			source: 'searchpredict.php',
+			select: function( event, ui ) {
+            window.location = ui.item.url;
+			}
+		});	
+		
+		});
+</script>
 
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-static-top" role="navigation">
@@ -236,9 +255,11 @@ $taglist ="";
                 </ul>
 
 				<!-- Search -->
-				<form class="navbar-form navbar-right" role="search">
+				<form class="navbar-form navbar-right" role="search" action="search.php">
 					<div class="form-group">
-						<input type="text" class="form-control">
+						<div class="ui-widget">
+							<input type="text" class="form-control" id="search" name="q">
+						</div>
 					</div>
 					<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
 				</form>
@@ -372,9 +393,7 @@ $taglist ="";
         </div>
 	</footer>
 
-	
-    <!-- jQuery -->
-    <script src="js/jquery-1.11.3.min.js"></script>
+
 
     <!-- Bootstrap Core JavaScript -->
     <script src="js/bootstrap.min.js"></script>

@@ -8,46 +8,87 @@
     exit;
   }
   
-  $sql = "SELECT * FROM task WHERE taskId IN (SELECT taskId FROM task_tags NATURAL JOIN user_subscribed_tags WHERE userId = '$_SESSION[userId]')
- AND NOT EXISTS 
-(SELECT * 
-   FROM task_claimed 
-   WHERE task.taskId = task_claimed.taskId) 
-AND NOT EXISTS  (
-      SELECT * 
-      FROM unpublished_tasks 
-      WHERE task.taskId = unpublished_tasks.taskId)
-AND NOT EXISTS  (
-      SELECT * 
-      FROM task_completed
-      WHERE task.taskId = task_completed.taskId)
-ORDER BY taskClaimDeadline";
-  $taskhtml = displayTasks($sql, true);
+  //all tasks
+   $sql = "SELECT * 
+	FROM task 
+	WHERE NOT EXISTS 
+	(SELECT * 
+	   FROM task_claimed 
+	   WHERE task.taskId = task_claimed.taskId) 
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM unpublished_tasks 
+		  WHERE task.taskId = unpublished_tasks.taskId)
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM task_completed
+		  WHERE task.taskId = task_completed.taskId)
+	ORDER BY taskClaimDeadline";
+  
+  if(isset($_GET['type']) && $_GET['type'] == "subscribed")
+	  {
+		$sql = "SELECT * FROM task WHERE taskId IN (SELECT taskId FROM task_tags NATURAL JOIN user_subscribed_tags WHERE userId = '$_SESSION[userId]')
+	 AND NOT EXISTS 
+	(SELECT * 
+	   FROM task_claimed 
+	   WHERE task.taskId = task_claimed.taskId) 
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM unpublished_tasks 
+		  WHERE task.taskId = unpublished_tasks.taskId)
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM task_completed
+		  WHERE task.taskId = task_completed.taskId)
+	ORDER BY taskClaimDeadline";
+	  }
+	  else if(isset($_GET['type']) && $_GET['type'] == "mysubject")
+	  {
+		$sql = "SELECT * 
+	FROM task 
+	WHERE taskSubject = (SELECT subjectStream FROM subject_streams WHERE userId = $_SESSION[userId]) AND 
+	NOT EXISTS 
+	(SELECT * 
+	   FROM task_claimed 
+	   WHERE task.taskId = task_claimed.taskId) 
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM unpublished_tasks 
+		  WHERE task.taskId = unpublished_tasks.taskId)
+	AND NOT EXISTS  (
+		  SELECT * 
+		  FROM task_completed
+		  WHERE task.taskId = task_completed.taskId)
+	ORDER BY taskClaimDeadline";
+	  }
+	  else if(isset($_GET['type']) && $_GET['type'] == "mostviewed"){
+			$sql = "SELECT * 
+				FROM task 
+				JOIN task_tags 
+				ON task.taskId = task_tags.taskId 
+				JOIN user_favourite_tags 
+				ON task_tags.tagId = user_favourite_tags.tagId 
+				WHERE user_favourite_tags.userId = '$_SESSION[userId]' 
+				AND NOT EXISTS 
+				(SELECT * 
+				   FROM task_claimed 
+				   WHERE task.taskId = task_claimed.taskId) 
+				AND NOT EXISTS  (
+					  SELECT * 
+					  FROM unpublished_tasks 
+					  WHERE task.taskId = unpublished_tasks.taskId)
+				AND NOT EXISTS  (
+					  SELECT * 
+					  FROM task_completed
+					  WHERE task.taskId = task_completed.taskId)
+				ORDER BY viewCount DESC, taskClaimDeadline";
+	  
+	}
+	
+		$taskhtml = displayTasks($sql, true);
+	
+	
  
-  $sql = "SELECT * 
-FROM task 
-WHERE NOT EXISTS 
-(SELECT * 
-   FROM task_claimed 
-   WHERE task.taskId = task_claimed.taskId) 
-AND NOT EXISTS  (
-      SELECT * 
-      FROM unpublished_tasks 
-      WHERE task.taskId = unpublished_tasks.taskId)
-AND NOT EXISTS  (
-      SELECT * 
-      FROM task_completed
-      WHERE task.taskId = task_completed.taskId)
-AND NOT EXISTS (
-     SELECT *
-     FROM task_tags 
-     NATURAL JOIN user_subscribed_tags 
-     WHERE userId = '$_SESSION[userId]'
-	 AND task.taskId = task_tags.taskId ) 
-ORDER BY taskClaimDeadline";
-	 
-	 
-  $taskhtml .= displayTasks($sql, true);
   
     if($taskhtml == "")
 	  $taskhtml = "<br><br>
@@ -104,6 +145,7 @@ ORDER BY taskClaimDeadline";
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 	
 	
+	
 
 </head>
 
@@ -115,6 +157,16 @@ ORDER BY taskClaimDeadline";
 		$( "#tags" ).autocomplete({
 			source: 'tagsearch.php'
 			});
+		
+		});
+		
+	$(function() {
+		$( "#search" ).autocomplete({
+			source: 'searchpredict.php',
+			select: function( event, ui ) {
+            window.location = ui.item.url;
+			}
+		});	
 		
 		});
 </script>
@@ -154,9 +206,11 @@ ORDER BY taskClaimDeadline";
                 </ul>
 
 				<!-- Search -->
-				<form class="navbar-form navbar-right" role="search">
+				<form class="navbar-form navbar-right" role="search" action="search.php">
 					<div class="form-group">
-						<input type="text" class="form-control">
+						<div class="ui-widget">
+							<input type="text" class="form-control" id="search" name="q">
+						</div>
 					</div>
 					<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search"></span> Search</button>
 				</form>
@@ -217,8 +271,33 @@ ORDER BY taskClaimDeadline";
 			
 		
 			<!-- Articles -->
-			
-			<?php echo $taskhtml;?>
+			<?php
+			$tasknav = "<ul class='nav nav-tabs'>
+							<li role='presentation'";
+			if( !isset($_GET['type']) || (isset($_GET['type']) && ($_GET['type'] !== "subscribed" && $_GET['type'] !== "mostviewed" && $_GET['type'] !== "mysubject")))
+					$tasknav .= "class='active'";
+			  
+			  $tasknav .= "><a href='dashboard.php?type=all'>All Tasks</a></li>
+							<li role='presentation'" ;
+			  
+			  if(isset($_GET['type']) && $_GET['type'] == "subscribed")
+					$tasknav .= "class='active'";
+				
+			  $tasknav .= "><a href='dashboard.php?type=subscribed'>Subscribed Tags</a></li>
+							<li role='presentation'";
+			  if(isset($_GET['type']) && $_GET['type'] == "mostviewed")
+					$tasknav .= "class='active'";
+			  $tasknav .= "><a href='dashboard.php?type=mostviewed'>Most Viewed Tags</a></li>
+							<li role='presentation'";
+			  if(isset($_GET['type']) && $_GET['type'] == "mysubject")
+					$tasknav .= "class='active'";
+				
+			 $tasknav .= "><a href='dashboard.php?type=mysubject'>My Subject Stream</a></li>
+							</ul>";
+							
+			 echo $tasknav;
+			 echo $taskhtml;
+			 ?>
 		</div><!--/Center Column-->
 
 

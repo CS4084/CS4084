@@ -5,9 +5,13 @@
 		header("Location: index.php");
 		exit;
     }
+	 $dashboardViewTypeArr =  explode("type=", $_SERVER['HTTP_REFERER']);
+	 $dashboardViewType = sizeof($dashboardViewTypeArr) == 1 ? "" : end($dashboardViewTypeArr);
+	 $error = false;
 	 
 	if($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['tag']) && !empty($_GET['tag']))
   {
+	  
 	  $tag = trim(mysqli_real_escape_string($db, $_GET['tag']));
 	  
 	  $sql = "SELECT tagId FROM tags WHERE tag = '$tag'";
@@ -27,11 +31,11 @@
 			$sql = "INSERT INTO user_subscribed_tags VALUES('$_SESSION[userId]','$row[tagId]')";
 			mysqli_query($db, $sql);
 		}
-		header("location: dashboard.php");
 		
 	  }
 	  else{
-			header("location: dashboard.php?error=1"); 
+			header("location: dashboard.php?error=1&type=" . $dashboardViewType);
+			$error = true;			
 	  }
 	  
   }
@@ -47,12 +51,12 @@
 		  mysqli_query($db, $sql);
 		  
 	  }
-	  header("location: dashboard.php");
+
   }
   
-  else {
-	  header("location: dashboard.php");
-  }
+	if(!$error)
+	  header("location: dashboard.php?type=" . $dashboardViewType);
+  
   
   
 	  
