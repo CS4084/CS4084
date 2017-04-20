@@ -15,13 +15,12 @@
         <!-- start PHP code -->
 <?php
 			include('config.php');
-			if ($_SERVER['REQUEST_METHOD'] == 'POST')
+			if(isset($_GET['email']) && !empty($_GET['email']) AND isset($_GET['hash']) && !empty($_GET['hash']))
 			{
 				// Verify data
-				$email = mysqli_real_escape_string($db,$_POST['email']); // Set email variable
-				$hash = mysqli_real_escape_string($db,$_POST['hash']); // Set hash variable
-						 
-				$search = mysqli_query("SELECT email, hash, active FROM users WHERE email='".$email."' AND hash='".$hash."' AND active='0'") or die(mysqli_error($db)); 
+				$email = mysqli_real_escape_string($db,$_POST['email']);
+				$hash = mysqli_real_escape_string($db,$_POST['hash']);	 
+				$search = mysqli_query($db,"SELECT email, hash, active FROM users WHERE email='".$email."' AND hash='".$hash."' AND active='0'") or die(mysqli_error($db)); 
 				$match  = mysqli_num_rows($search);
 						 
 				if($match > 0)
@@ -37,12 +36,9 @@
 				}		 
 			}
 			else{
-				// Invalid approach
-				echo '<div class="statusmsg">Invalid approach, please use the link that has been send to your email.</div>';
-				}
-			
-			
-             
+					// Invalid approach
+					echo '<div class="statusmsg">Invalid approach, please use the link that has been send to your email.</div>';
+				}      
 ?>
         <!-- stop PHP Code -->
     </div>
