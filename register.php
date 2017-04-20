@@ -9,7 +9,6 @@ session_start();
  }
 $errormsg = "";
 $error = false;
-
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
 	 
 	 $todaydate =  date("Y-m-d");
@@ -86,7 +85,7 @@ $error = false;
 	$password = hash('sha256', $pwd);
 	$hash = md5( rand(0,1000) ); // Generate random 32 character hash and assign it to a local variable. for email to user
 	if( !$error ) {
-		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined,hash) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate','$hash')";
+		$query = "INSERT INTO users(firstName,lastName,studentId,email,password,dateJoined,hashing) VALUES('$firstname','$lastname','$id','$email','$password','$todaydate','$hash')";
 		mysqli_query($db,$query);
 		$userId=mysqli_insert_id($db);
 		
@@ -109,13 +108,10 @@ $error = false;
 		Password: '.$pwd.'
 		------------------------
 		 
-		Please click this link to activate your account:
-		http://testweb3.csisad.ul.campus/modules/cs4014/group20/verify.php'.$email.'&hash='.$hash.'
 		 '; // Our message above including the link
 							 
 		$headers = 'From:noreply@proofreaders.com' . "\r\n"; // Set from headers
 		mail($to, $subject, $message, $headers); // Send our email
-
 		header("location: index.php?success=1");
 	}
 } 
