@@ -23,7 +23,7 @@
 	  
 	  $mytasks = isset($_GET['userId']) && $_GET['userId'] == $_SESSION['userId'];
 	  
-	  $sql = "SELECT * FROM task WHERE userId = $userId AND NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId)) ORDER BY taskDate DESC";
+	  $sql = "SELECT * FROM task WHERE userId = $userId AND NOT EXISTS ((SELECT * FROM task_claimed WHERE task.taskId = task_claimed.taskId) UNION (SELECT * FROM unpublished_tasks WHERE task.taskId = unpublished_tasks.taskId) UNION (SELECT * FROM task_completed WHERE task.taskId = task_completed.taskId)) ORDER BY taskDate DESC";
 	  
 	  if(isset($_GET['type']) && $_GET['type'] == "claimed" && $mytasks)
 	  {

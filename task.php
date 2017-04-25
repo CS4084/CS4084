@@ -100,7 +100,7 @@ $taglist ="";
 		}
 		
 		
-		if($claimed)
+		if($claimed || $completed)
 		{
 			//Get claimer's name and ID from the DB
 			$sql = "SELECT userId from task_claimed WHERE taskId = '$taskId'";
@@ -356,7 +356,7 @@ $(function() {
 				  echo "<li class='list-group-item'><strong>Full Document:</strong> <a href=' $fileurl'>Click here to download.</a> $taskfilehtml</li>";
 			  
 			  
-			  if($claimed)
+			  if($claimed || $completed)
 			  {
 				 echo "<li class='list-group-item'><strong>Claimed By:</strong> <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
 			  }
