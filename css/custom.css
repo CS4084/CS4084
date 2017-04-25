@@ -86,6 +86,25 @@ textarea.submit {
     z-index:99; 
 }
 
+.rate-buttons-container{
+	width: 100%;
+	margin-top: 20px;
+}
+
+.rate-buttons {
+	display: inline;
+	margin: 10px;
+}
+
+.happy{
+	margin-left: 0px;
+}
+
+.red{
+	color:red;
+	font-weight: bold;
+}
+
 @media screen and (max-width: 767px) {
 	.task-info {
 		margin-left: 0px;
