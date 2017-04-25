@@ -27,7 +27,7 @@
 	  
 	  if(isset($_GET['type']) && $_GET['type'] == "claimed" && $mytasks)
 	  {
-		$sql = "SELECT * FROM task_claimed JOIN task on task_claimed.taskId = task.taskId WHERE task.taskId IN (SELECT taskId FROM task WHERE userId = '$userId' AND taskId NOT IN (SELECT taskId FROM task_completed)";
+		$sql = "SELECT * FROM task_claimed JOIN task on task_claimed.taskId = task.taskId WHERE task.taskId IN (SELECT taskId FROM task WHERE userId = '$userId' AND taskId NOT IN (SELECT taskId FROM task_completed))";
 	  }
 	  else if(isset($_GET['type']) && $_GET['type'] == "completed" && $mytasks)
 	  {

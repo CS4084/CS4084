@@ -112,10 +112,11 @@ $taglist ="";
 				$claimer = true;
 			}
 			
-			$sql3 = "SELECT firstName, lastName FROM users WHERE userId = '$claimerid'";
+			$sql3 = "SELECT firstName, lastName, email FROM users WHERE userId = '$claimerid'";
 			$result3 = mysqli_query($db, $sql3);	
 			$row = mysqli_fetch_array($result3, MYSQLI_ASSOC);
 			$claimername = $row['firstName'] . " " . $row['lastName'];
+			$claimerEmail = $row['email'];
 		}
 		
 		//Get file paths from the DB
@@ -153,7 +154,7 @@ $taglist ="";
 	 }
 	 
 	 else
-		 header('location: dashboard.php?1');
+		 header('location: dashboard.php');
 
 
 
@@ -171,6 +172,17 @@ $taglist ="";
 		}
 	}
 	
+	if(isset($_GET['cancel']) && $claimer && !$completed && !$unpublished)
+	{
+		$sql = "DELETE FROM task_claimed WHERE taskId = '$taskId'";
+		mysqli_query($db, $sql);
+		$sql = "UPDATE users SET repScore = repScore - 15 WHERE userId = '$_SESSION[userId]'";
+		mysqli_query($db,$sql);
+		$_SESSION['repScore'] = $_SESSION['repScore'] - 15;
+		header('location: dashboard.php');
+
+	}
+	
 	if($completed)
 	{
 		$sql = "SELECT review, feedbackGiven FROM task_completed WHERE taskId = '$taskId'";
@@ -183,7 +195,7 @@ $taglist ="";
  }
 
 	else 
-		header("location: dashboard.php");
+		header("location: dashboard.php?1");
 	
 		
 		
@@ -288,19 +300,6 @@ $(function() {
 
 		<!-- Left Column -->
 		<div class="col-sm-3">
-
-			<!-- List-Group Panel -->
-			<div class="panel panel-default">
-				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-home"></span> Dashboard</h1>
-				</div>
-				<div class="list-group">
-					<a href="logout.php" class="list-group-item">Log out</a>
-					<a href="newtask.php" class="list-group-item">Create a new task</a>
-				
-				</div>
-			</div>
-
 	
 		</div><!--/Left Column-->
   
@@ -336,7 +335,7 @@ $(function() {
 			  <li class="list-group-item"><strong>Submitted on:</strong> <?php echo $taskDate;?></li>
 			  <li class="list-group-item"><strong>Claim deadline:</strong> <?php echo $taskClaimDeadline;?></li>
 			  <li class="list-group-item"><strong>Deadline:</strong> <?php echo $taskCompletionDeadline;?></li>
-			  <li class="list-group-item"><strong>Sample:</strong> <a href="<?php echo $samplefileurl;?>">Click here to download.</a><?php echo $samplefilehtml;?></li>
+			  <li class="list-group-item"><strong>Sample:</strong> <a href="<?php echo $samplefileurl;?>" download>Click here to download.</a><?php echo $samplefilehtml;?></li>
 			  <?php 
 			  
 			  if($pastdeadline && !$claimed && !$owner)
@@ -353,12 +352,13 @@ $(function() {
 			  }
 			  
 			  else
-				  echo "<li class='list-group-item'><strong>Full Document:</strong> <a href=' $fileurl'>Click here to download.</a> $taskfilehtml</li>";
+				  echo "<li class='list-group-item'><strong>Full Document:</strong> <a href=' $fileurl' download>Click here to download.</a> $taskfilehtml</li>";
 			  
 			  
 			  if($claimed || $completed)
 			  {
-				 echo "<li class='list-group-item'><strong>Claimed By:</strong> <a href='profile.php?userId=$claimerid'>$claimername</a></li>";
+				 echo "<li class='list-group-item'><strong>Claimed By:</strong> <a href='profile.php?userId=$claimerid'>$claimername</a></li>
+						<li class='list-group-item'><strong>Claimer Email:</strong> <a href='mailto:$claimerEmail'>$claimerEmail</a></li>";
 			  }
 			  
 			  ?>
@@ -380,6 +380,15 @@ $(function() {
 			<textarea rows='4' class='submit' name='taskreview'></textarea>
 			<input type='hidden' value='$taskId' name='taskId' />
 			<button class='btn btn-success' type='submit'>Complete Task</button>
+			</form>
+			
+			<br>
+			<br>
+			<br>
+			<form action='" . htmlspecialchars($_SERVER['PHP_SELF']) ."' method='get'>
+			<input type='hidden' name='taskId' value='" .  htmlspecialchars($_GET['taskId']) . "'>
+			<input type='hidden' name='cancel' value='1'>
+			<button class='btn btn-danger' type='submit'><span class='glyphicon glyphicon-remove'></span>   Cancel Task (-15 Rep)</button>
 			</form>
 			</li></ul>";
 			
