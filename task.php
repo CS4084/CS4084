@@ -49,6 +49,13 @@ $taglist ="";
 		if($userId == $_SESSION['userId'])
 			$owner = true;
 		
+		 $banned = false;
+		 $sql = "SELECT bannedUserId FROM user_banned WHERE bannedUserId = '$userId'";
+		 $result = mysqli_query($db,$sql);
+		 $count = mysqli_num_rows($result);
+		 if($count > 0)
+			 $banned = true;
+		
 		
 		$claimed = checkInTable("SELECT taskId, userId FROM task_claimed WHERE taskId = '$taskId'");
 		$unpublished= checkInTable("SELECT taskId, userId FROM unpublished_tasks WHERE taskId = '$taskId'");
@@ -163,11 +170,20 @@ $taglist ="";
 			$unpublished = true;
 		}
 	}
+	
+	if($completed)
+	{
+		$sql = "SELECT review, feedbackGiven FROM task_completed WHERE taskId = '$taskId'";
+		$result = mysqli_query($db,$sql);
+		$row = mysqli_fetch_array($result, MYSQLI_ASSOC);
+		$review = $row['review'];
+		$feedbackGiven = $row['feedbackGiven'];
 
 	}
+ }
 
 	else 
-		header("location: dashboard.php?2");
+		header("location: dashboard.php");
 	
 		
 		
@@ -327,7 +343,7 @@ $(function() {
 			  {
 			    echo "<li class='list-group-item list-group-item-warning'>This task has passed its deadline to be claimed.</li>";
 			  }
-			  else if(!$claimed && !$owner)
+			  else if(!$claimed && !$owner && !$banned)
 			  {
 				echo "<form action='" . htmlspecialchars($_SERVER['PHP_SELF']) ."' method='get'>
 				<input type='hidden' name='taskId' value='" .  htmlspecialchars($_GET['taskId']) . "'>
@@ -365,7 +381,36 @@ $(function() {
 			<input type='hidden' value='$taskId' name='taskId' />
 			<button class='btn btn-success' type='submit'>Complete Task</button>
 			</form>
-			</li></ul>";?>
+			</li></ul>";
+			
+			else if(($owner || $claimer) && $completed)
+			{				
+			echo "<ul class='list-group task-info'>
+				<li class='list-group-item greyBG'>Task Reveiw:
+				</li>
+				<li class='list-group-item'>
+				<p>$review</p>
+				</li>";
+				
+			if($feedbackGiven == 0 && $owner)
+			{
+				echo "<div class='rate-buttons-container'>
+				<form action='completetask.php' method='post' class='rate-buttons happy'>
+			<input type='hidden' value='1' name='happy' />
+			<input type='hidden' value='$taskId' name='taskId' />
+			<button class='btn btn-success' type='submit'>Happy <span class='glyphicon glyphicon-thumbs-up'></span></button>
+			</form>
+			<form action='completetask.php' method='post' class='rate-buttons'>
+			<input type='hidden' value='1' name='unhappy' />
+			<input type='hidden' value='$taskId' name='taskId' />
+			<button class='btn btn-danger' type='submit'>Unhappy <span class='glyphicon glyphicon-thumbs-down'></span></button>
+			</form>
+			</div>";
+			}
+				
+				echo "</ul>"; 
+			}  
+			?>
 			
 			</div> 
 			  

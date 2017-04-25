@@ -24,6 +24,14 @@
 	 }
 	 else
 		 header("location: dashboard.php");
+	 
+	 $banned = false;
+	 $sql = "SELECT bannedUserId FROM user_banned WHERE bannedUserId = '$userId'";
+	 $result = mysqli_query($db,$sql);
+	 $count = mysqli_num_rows($result);
+	 if($count > 0)
+		 $banned = true;
+	 
  
    
  
@@ -134,11 +142,16 @@ $(function() {
 			<div class="panel panel-default">
 			
 				<div class="panel-heading">
-					<h1 class="panel-title"><span class="glyphicon glyphicon-user"></span> <?php echo $title; ?></h1><?php if($_SESSION['repScore'] >= 40 && isset($_GET['userId'])) echo
+					<h1 class="panel-title <?php if($banned) echo "red";?>"><span class="glyphicon glyphicon-user"></span> <?php 
+					
+					echo $title;
+					if($banned) echo " - This user is banned."; ?></h1><?php if($_SESSION['repScore'] >= 40 && (isset($_GET['userId']) && $_GET['userId'] !== $_SESSION['userId']) && !$banned) echo
 			"<br><form action='ban.php' method='post'>
 				<input type='hidden' name='userId' value='" .  htmlspecialchars($_GET['userId']) . "'>
 				<button type='submit' class='btn btn-danger'>Ban User  <span class='glyphicon glyphicon-remove'></span></button>
-				</form>"
+				</form>";
+				
+				
 			?>
 			
 			

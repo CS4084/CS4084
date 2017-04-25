@@ -38,14 +38,7 @@
 		$sql = "SELECT * FROM unpublished_tasks JOIN task on unpublished_tasks.taskId = task.taskId WHERE task.taskId IN (SELECT taskId FROM task WHERE userId = '$userId')";
 	  }
 	  
-	  
-		
 	  $taskhtml = displayTasks($sql);
-	  
-	  if($mytasks && isset($_GET['type']) && $_GET['type'] == "completed")
-	  {
-		$taskhtml = str_replace("/h2>", "/h2><p>Review: </p><span class='glyphicon glyphicon-thumbs-up pull-right'></span>   <span class='glyphicon glyphicon-thumbs-down pull-right'></span>", $taskhtml);
-	  }
 		  
 	  
 	

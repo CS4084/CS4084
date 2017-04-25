@@ -60,10 +60,13 @@ function displayTasks($sql, $remove = false)
 								<p><a href='task.php?taskId=$row[taskId]'><button class='btn btn-default'>Read More</button></a></p>
 								<p class='pull-right'>$taglist</p>
 								<ul class='list-inline'>
-									<li>Submitted on $date</a></li>
-									<li><a href ='flag.php?taskId=$row[taskId]'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>
-									<li>Submitted by: <a href='profile.php?userId=$row[userId]'>$userName</a></li>
-								</ul>
+									<li>Submitted on $date</a></li>";
+									
+				if($_SESSION['userId'] !== $row['userId'])
+					$taskhtml .=  "<li><a href ='flag.php?taskId=$row[taskId]'><span class='glyphicon glyphicon-flag'></span> Flag as inappropriate</a></li>";
+									
+				$taskhtml .=  "<li>Submitted by: <a href='profile.php?userId=$row[userId]'>$userName</a></li>
+							</ul>
 							</article>
 						</div>
 			  <hr>";

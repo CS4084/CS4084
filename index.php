@@ -17,10 +17,12 @@
  {
 	$registered = true;
  }
+ $bannedUserBox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-remove'></span>  You have been banned from this website.</div>";
  
  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
  
  $errorbox = "<div class='alert alert-danger' role='alert'><span class='glyphicon glyphicon-warning-sign'></span>  Invalid email or password.</div>";
+ 
  
  if (isset($_POST['email']) && isset($_POST['password']))
  {
@@ -44,10 +46,17 @@
       // If result matched $myusername and $mypassword, table row must be 1 row
 		
       if($count == 1) {
-        
-         $_SESSION['userId'] = $row["userId"];
-		 $_SESSION['repScore'] = $row["repScore"];
-         header("location: dashboard.php");
+		  
+		  $sql = "SELECT bannedUserId FROM user_banned WHERE bannedUserId = '$row[userId]'";
+		 $result = mysqli_query($db,$sql);
+		 $count = mysqli_num_rows($result);
+		 if($count > 0)
+			 header('location: index.php?banned=1');
+		 else{
+			 $_SESSION['userId'] = $row["userId"];
+			 $_SESSION['repScore'] = $row["repScore"];
+			 header("location: dashboard.php");
+		 }
       }else {
          $error = true;
       }
@@ -112,7 +121,10 @@
 					} 
 					
 					if($registered)
-						echo $registersuccessbox?>
+						echo $registersuccessbox;
+					
+					if(isset($_GET['banned']))
+						echo $bannedUserBox;?>
 					<form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
 						<div class="form-group">
 							<input type="text" class="form-control" id="email" name="email" placeholder="Email">

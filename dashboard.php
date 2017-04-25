@@ -24,6 +24,8 @@
 		  SELECT * 
 		  FROM task_completed
 		  WHERE task.taskId = task_completed.taskId)
+	AND userId NOT IN (
+	SELECT bannedUserId FROM user_banned)
 	ORDER BY taskClaimDeadline";
   
   if(isset($_GET['type']) && $_GET['type'] == "subscribed")
@@ -41,13 +43,15 @@
 		  SELECT * 
 		  FROM task_completed
 		  WHERE task.taskId = task_completed.taskId)
+		  AND userId NOT IN (
+	SELECT bannedUserId FROM user_banned)
 	ORDER BY taskClaimDeadline";
 	  }
 	  else if(isset($_GET['type']) && $_GET['type'] == "mysubject")
 	  {
 		$sql = "SELECT * 
 	FROM task 
-	WHERE taskSubject = (SELECT subjectStream FROM subject_streams WHERE userId = $_SESSION[userId]) AND 
+	WHERE taskSubject = (SELECT subjectStream FROM subject_streams WHERE userId = '$_SESSION[userId]') AND 
 	NOT EXISTS 
 	(SELECT * 
 	   FROM task_claimed 
@@ -59,7 +63,9 @@
 	AND NOT EXISTS  (
 		  SELECT * 
 		  FROM task_completed
-		  WHERE task.taskId = task_completed.taskId)
+		  WHERE task.taskId = task_completed.taskId)	  
+	AND userId NOT IN (
+	SELECT bannedUserId FROM user_banned)
 	ORDER BY taskClaimDeadline";
 	  }
 	  else if(isset($_GET['type']) && $_GET['type'] == "mostviewed"){
@@ -82,6 +88,8 @@
 					  SELECT * 
 					  FROM task_completed
 					  WHERE task.taskId = task_completed.taskId)
+					  AND userId NOT IN (
+	SELECT bannedUserId FROM user_banned)
 				ORDER BY viewCount DESC, taskClaimDeadline";
 	  
 	}
