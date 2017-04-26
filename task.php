@@ -111,6 +111,10 @@ $taglist ="";
 			{
 				$claimer = true;
 			}
+			else if(!$owner)
+			{
+				header('location: dashboard.php');
+			}
 			
 			$sql3 = "SELECT firstName, lastName, email FROM users WHERE userId = '$claimerid'";
 			$result3 = mysqli_query($db, $sql3);	
@@ -314,7 +318,7 @@ $(function() {
 
 			if(($owner || ($_SESSION['repScore'] >= 40 && $flagged)) && !$unpublished && !$completed)
 			{
-				echo "<p class='pull-right'><a href='task.php?taskId=$taskId&unpublish=1'><span class='glyphicon glyphicon-remove'></span>  Unpublish Task</a></p>";
+				echo "<p class='pull-right unpublish'><a href='task.php?taskId=$taskId&unpublish=1'><span class='glyphicon glyphicon-remove'></span>  Unpublish Task</a></p>";
 			}
 
 	
