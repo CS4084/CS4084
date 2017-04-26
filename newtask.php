@@ -37,7 +37,7 @@
 		 $errormsg .= "Please choose a task file to upload.<br>";
 	 else {
 		 //Check file format
-		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'odt', 'rtf');
+		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'rtf');
 		 $file_name = $_FILES['taskfile']['name'];
 		 $nameparts = explode("." ,$file_name);
 		 if( !in_array( strtolower( end($nameparts) ), $okExtensions) )
@@ -47,7 +47,7 @@
 		 $errormsg .= "Please choose a sample file to upload.<br>";
 	 else {
 		 //Check file format
-		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'odt', 'rtf');
+		 $okExtensions = array('doc', 'docx', 'pdf', 'txt', 'rtf');
 		 $samplefilename = $_FILES['samplefile']['name'];
 		 $nameparts = explode("." ,$samplefilename);
 		 if( !in_array( strtolower( end($nameparts) ), $okExtensions) )
@@ -85,9 +85,11 @@
 	  $todaydate =  date("Y-m-d");
       $file_tmp =$_FILES['taskfile']['tmp_name'];
 	  $samplefiletmp = $_FILES['samplefile']['tmp_name'];
-	  $title = mysqli_real_escape_string($db,$_POST['title']);
-	  $type = mysqli_real_escape_string($db,$_POST['type']);
-	  $description = mysqli_real_escape_string($db,$_POST['description']);
+	  $title = mysqli_real_escape_string($db, htmlspecialchars(substr($_POST['title'],0,255)));
+	  $type = mysqli_real_escape_string($db, htmlspecialchars(substr($_POST['type'],0,32)));
+	  $description = mysqli_real_escape_string($db,htmlspecialchars(substr($_POST['description'],0, 2147483647)));
+	  $_POST['wordcount'] = $_POST['wordcount'] > 8388607 ? 8388607 : $_POST['wordcount'];
+	  $_POST['pagecount'] = $_POST['pagecount'] > 8388607 ? 8388607 : $_POST['pagecount'];
 	  $pagecount = mysqli_real_escape_string($db,$_POST['pagecount']);
 	  $wordcount = mysqli_real_escape_string($db,$_POST['wordcount']);
 	  $claimdeadline = mysqli_real_escape_string($db,$_POST['claimdeadline']);
@@ -343,7 +345,7 @@
 						<input type="text" class="form-control" id="tags" name="tags" placeholder="Tags" value="<?php echo isset($_POST['tags']) ? htmlspecialchars($_POST['tags']) : '' ?>">
 					</div>
 					<div class="form-group">
-					<p>Accepted file formats: <kbd>.doc</kbd> <kbd>.docx</kbd> <kbd>.pdf</kbd> <kbd>.txt</kbd> <kbd>.odt</kbd> <kbd>.rtf</kbd>.</p>
+					<p>Accepted file formats: <kbd>.doc</kbd> <kbd>.docx</kbd> <kbd>.pdf</kbd> <kbd>.txt</kbd> <kbd>.rtf</kbd>.</p>
 					<p>Upload a <strong>sample</strong> of the document. This will be available for anyone to download.</p>
 					<input type="file" name="samplefile" />
 					</div>

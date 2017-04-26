@@ -88,7 +88,7 @@
 					  SELECT * 
 					  FROM task_completed
 					  WHERE task.taskId = task_completed.taskId)
-					  AND userId NOT IN (
+					  AND task.userId NOT IN (
 	SELECT bannedUserId FROM user_banned)
 				ORDER BY viewCount DESC, taskClaimDeadline";
 	  

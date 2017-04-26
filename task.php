@@ -150,6 +150,7 @@ $taglist ="";
 					$sql = "UPDATE user_favourite_tags SET viewCount = viewCount + 1 WHERE userId = '$_SESSION[userId]' AND tagId = '$row[tagId]'";
 			   
 			   mysqli_query($db, $sql); 
+			   
 		   }
 		   
 		   $taglist .= "<a  title='Subscribe to this tag' href='tag.php?tag=$row[tag]'><span class='label label-default add-tag' >$row[tag]</span></a>  ";
